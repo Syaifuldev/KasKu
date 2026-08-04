@@ -59,11 +59,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect ke workspaces jika sudah login dan akses login page
-  if (user && pathname === "/login") {
-    const workspacesUrl = new URL("/workspaces", request.url);
-    return NextResponse.redirect(workspacesUrl);
-  }
+  // [REMOVED] Redirect ke workspaces jika sudah login dan akses login page
+  // untuk mencegah infinite redirect loop jika profile di database hilang (user ada di auth tapi tidak ada di tabel users)
 
   return supabaseResponse;
 }

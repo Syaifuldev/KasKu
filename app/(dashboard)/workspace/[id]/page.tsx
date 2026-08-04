@@ -50,7 +50,7 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
   if (!workspace) notFound();
 
   const balanceColor =
-    workspace.balance >= 0 ? "text-emerald-500" : "text-red-400";
+    Number(workspace.balance || 0) >= 0 ? "text-emerald-500" : "text-red-400";
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
@@ -85,28 +85,28 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           title="Saldo Saat Ini"
-          value={formatRupiah(workspace.balance)}
+          value={formatRupiah(Number(workspace.balance || 0))}
           icon={Wallet}
-          type={workspace.balance >= 0 ? "emerald" : "red"}
+          type={Number(workspace.balance || 0) >= 0 ? "emerald" : "red"}
           index={0}
         />
         <StatsCard
           title="Total Pemasukan"
-          value={formatRupiah(workspace.total_income)}
+          value={formatRupiah(Number(workspace.total_income || 0))}
           icon={TrendingUp}
           type="emerald"
           index={1}
         />
         <StatsCard
           title="Total Pengeluaran"
-          value={formatRupiah(workspace.total_expense)}
+          value={formatRupiah(Number(workspace.total_expense || 0))}
           icon={TrendingDown}
           type="red"
           index={2}
         />
         <StatsCard
           title="Jumlah Transaksi"
-          value={workspace.transaction_count.toString()}
+          value={String(workspace.transaction_count || 0)}
           subtitle="total transaksi"
           icon={Activity}
           type="blue"

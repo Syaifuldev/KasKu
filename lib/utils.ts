@@ -22,7 +22,7 @@ export function formatRupiah(amount: number): string {
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(Number(amount || 0));
 }
 
 /**
@@ -30,16 +30,17 @@ export function formatRupiah(amount: number): string {
  * @example formatCompact(1500000) => "1,5 Jt"
  */
 export function formatCompact(amount: number): string {
-  if (amount >= 1_000_000_000) {
-    return `${(amount / 1_000_000_000).toFixed(1)} M`;
+  const num = Number(amount || 0);
+  if (num >= 1_000_000_000) {
+    return `${(num / 1_000_000_000).toFixed(1)} M`;
   }
-  if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(1)} Jt`;
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1)} Jt`;
   }
-  if (amount >= 1_000) {
-    return `${(amount / 1_000).toFixed(0)} Rb`;
+  if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(0)} Rb`;
   }
-  return amount.toString();
+  return num.toString();
 }
 
 /**

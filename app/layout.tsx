@@ -9,6 +9,14 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+const getAppUrl = () => {
+  const url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url) return "http://localhost:3000";
+  return url.startsWith("http") ? url : `https://${url}`;
+};
+
+const appUrl = getAppUrl();
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -24,11 +32,11 @@ export const metadata: Metadata = {
   keywords: ["kas", "keuangan", "pencatatan", "pemasukan", "pengeluaran", "workspace"],
   authors: [{ name: "KasKu" }],
   creator: "KasKu",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(appUrl),
   openGraph: {
     title: "KasKu — Aplikasi Pencatatan Kas",
     description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
-    url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    url: appUrl,
     siteName: "KasKu",
     locale: "id_ID",
     type: "website",

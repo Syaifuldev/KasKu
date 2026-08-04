@@ -38,11 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function WorkspaceDashboardPage({ params }: Props) {
   const { id } = await params;
 
-  const [workspace, chartData, recentTransactions] = await Promise.all([
-    getWorkspaceById(id),
-    getMonthlyChartData(id),
-    getRecentTransactions(id, 5),
-  ]);
+  try {
+    const [workspace, chartData, recentTransactions] = await Promise.all([
+      getWorkspaceById(id),
+      getMonthlyChartData(id),
+      getRecentTransactions(id, 5),
+    ]);
 
   if (!workspace) notFound();
 
@@ -150,4 +151,17 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
       </Link>
     </div>
   );
+  } catch (error: any) {
+    return (
+      <div className="p-8 max-w-6xl mx-auto text-red-500">
+        <h1 className="text-2xl font-bold mb-4">Error Rendering Page</h1>
+        <p className="font-mono bg-red-500/10 p-4 rounded-lg mb-4 whitespace-pre-wrap">
+          {error?.message || "Unknown error"}
+        </p>
+        <pre className="text-xs bg-black/10 p-4 rounded-lg overflow-auto">
+          {error?.stack}
+        </pre>
+      </div>
+    );
+  }
 }

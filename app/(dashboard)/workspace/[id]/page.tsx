@@ -17,8 +17,11 @@ import {
 import { getWorkspaceById, getMonthlyChartData } from "@/lib/queries/workspace.queries";
 import { getRecentTransactions } from "@/lib/queries/transaction.queries";
 import { getCurrentUser } from "@/lib/actions/auth.actions";
+import dynamic from "next/dynamic";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { MonthlyChart } from "@/components/dashboard/monthly-chart";
+const MonthlyChart = dynamic(() => import("@/components/dashboard/monthly-chart").then((mod) => mod.MonthlyChart), {
+  loading: () => <div className="h-[300px] w-full bg-muted/20 animate-pulse rounded-xl border border-border"></div>,
+});
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { WorkspaceDashboardClient } from "./workspace-dashboard-client";
 import { formatRupiah } from "@/lib/utils";

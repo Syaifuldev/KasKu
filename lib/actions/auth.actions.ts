@@ -82,7 +82,7 @@ export async function updateProfile(formData: FormData) {
   if (error) return { error: "Gagal memperbarui profil" };
 
   revalidatePath("/settings");
-  return { success: true };
+  return { data: { success: true } };
 }
 
 /**
@@ -106,5 +106,5 @@ export async function updatePassword(formData: FormData) {
 
   if (error) return { error: "Gagal memperbarui password" };
 
-  return { success: true };
+  return { data: { success: true } };
 }

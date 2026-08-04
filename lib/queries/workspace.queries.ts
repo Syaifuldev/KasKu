@@ -18,40 +18,12 @@ export async function getWorkspacesWithStats(): Promise<WorkspaceWithStats[]> {
   if (!user) return [];
 
   const { data: workspaces } = await supabase
-    .from("workspaces")
+    .from("workspace_stats")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (!workspaces?.length) return [];
-
-  // Hitung statistik untuk setiap workspace
-  const workspacesWithStats = await Promise.all(
-    workspaces.map(async (ws) => {
-      const { data: stats } = await supabase
-        .from("transactions")
-        .select("type, amount")
-        .eq("workspace_id", ws.id);
-
-      const total_income = stats
-        ?.filter((t) => t.type === "income")
-        .reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
-
-      const total_expense = stats
-        ?.filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
-
-      return {
-        ...ws,
-        total_income,
-        total_expense,
-        balance: total_income - total_expense,
-        transaction_count: stats?.length ?? 0,
-      };
-    })
-  );
-
-  return workspacesWithStats;
+  return (workspaces as unknown as WorkspaceWithStats[]) || [];
 }
 
 /**
@@ -67,34 +39,13 @@ export async function getWorkspaceById(id: string): Promise<WorkspaceWithStats |
   if (!user) return null;
 
   const { data: workspace } = await supabase
-    .from("workspaces")
+    .from("workspace_stats")
     .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
-  if (!workspace) return null;
-
-  const { data: stats } = await supabase
-    .from("transactions")
-    .select("type, amount")
-    .eq("workspace_id", id);
-
-  const total_income = stats
-    ?.filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
-
-  const total_expense = stats
-    ?.filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
-
-  return {
-    ...workspace,
-    total_income,
-    total_expense,
-    balance: total_income - total_expense,
-    transaction_count: stats?.length ?? 0,
-  };
+  return (workspace as unknown as WorkspaceWithStats) || null;
 }
 
 /**

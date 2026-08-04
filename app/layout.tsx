@@ -25,6 +25,23 @@ export const metadata: Metadata = {
   authors: [{ name: "KasKu" }],
   creator: "KasKu",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  openGraph: {
+    title: "KasKu — Aplikasi Pencatatan Kas",
+    description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
+    url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    siteName: "KasKu",
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KasKu — Aplikasi Pencatatan Kas",
+    description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

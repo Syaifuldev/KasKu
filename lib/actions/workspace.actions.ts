@@ -89,7 +89,7 @@ export async function updateWorkspace(id: string, formData: FormData) {
 
   revalidatePath("/workspaces");
   revalidatePath(`/workspace/${id}`);
-  return { success: true };
+  return { data: { success: true } };
 }
 
 /**
@@ -113,7 +113,7 @@ export async function toggleArchiveWorkspace(id: string, isArchived: boolean) {
   if (error) return { error: "Gagal mengarsipkan workspace" };
 
   revalidatePath("/workspaces");
-  return { success: true };
+  return { data: { success: true } };
 }
 
 /**
@@ -137,5 +137,5 @@ export async function deleteWorkspace(id: string) {
   if (error) return { error: "Gagal menghapus workspace" };
 
   revalidatePath("/workspaces");
-  return { success: true };
+  return { data: { success: true } };
 }

@@ -108,7 +108,7 @@ export async function updateTransaction(
 
   revalidatePath(`/workspace/${workspaceId}`);
   revalidatePath(`/workspace/${workspaceId}/transactions`);
-  return { success: true };
+  return { data: { success: true } };
 }
 
 /**
@@ -133,7 +133,7 @@ export async function deleteTransaction(id: string, workspaceId: string) {
 
   revalidatePath(`/workspace/${workspaceId}`);
   revalidatePath(`/workspace/${workspaceId}/transactions`);
-  return { success: true };
+  return { data: { success: true } };
 }
 
 /**

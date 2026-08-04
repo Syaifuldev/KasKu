@@ -4,6 +4,10 @@
  */
 "use client";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { profileSchema, passwordSchema, type ProfileSchema, type PasswordSchema } from "@/lib/validations/auth.schema";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { User, Lock, Save, Loader2, Shield } from "lucide-react";
@@ -11,7 +15,6 @@ import { toast } from "sonner";
 import { updateProfile, updatePassword } from "@/lib/actions/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
@@ -25,9 +28,24 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const [profilePending, startProfileTransition] = useTransition();
   const [passwordPending, startPasswordTransition] = useTransition();
 
-  const handleProfileSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const profileForm = useForm<ProfileSchema>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      full_name: user.name || "",
+    },
+  });
+
+  const passwordForm = useForm<PasswordSchema>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      password: "",
+      confirm_password: "",
+    },
+  });
+
+  const onProfileSubmit = (data: ProfileSchema) => {
+    const formData = new FormData();
+    formData.append("name", data.full_name);
     startProfileTransition(async () => {
       const result = await updateProfile(formData);
       if (result?.error) toast.error(result.error);
@@ -35,15 +53,16 @@ export function SettingsClient({ user }: SettingsClientProps) {
     });
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  const onPasswordSubmit = (data: PasswordSchema) => {
+    const formData = new FormData();
+    formData.append("password", data.password);
+    formData.append("confirmPassword", data.confirm_password);
     startPasswordTransition(async () => {
       const result = await updatePassword(formData);
       if (result?.error) toast.error(result.error);
       else {
         toast.success("Password diperbarui");
-        (e.target as HTMLFormElement).reset();
+        passwordForm.reset();
       }
     });
   };
@@ -84,44 +103,56 @@ export function SettingsClient({ user }: SettingsClientProps) {
           </div>
         </div>
 
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nama Lengkap</Label>
-            <Input
-              id="name"
-              name="name"
-              defaultValue={user.name ?? ""}
-              placeholder="Masukkan nama Anda"
-              disabled={profilePending}
-              className="h-11"
+        <Form {...profileForm}>
+          <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+            <FormField
+              control={profileForm.control}
+              name="full_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Lengkap</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Masukkan nama Anda"
+                      disabled={profilePending}
+                      className="h-11"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email-display">Email</Label>
-            <Input
-              id="email-display"
-              value={user.email}
-              disabled
-              className="h-11 text-muted-foreground"
-            />
-            <p className="text-xs text-muted-foreground">
-              Email tidak dapat diubah melalui halaman ini
-            </p>
-          </div>
-          <Button type="submit" disabled={profilePending} className="mt-2">
-            {profilePending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Menyimpan...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Simpan Profil
-              </>
-            )}
-          </Button>
-        </form>
+            
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  value={user.email}
+                  disabled
+                  className="h-11 text-muted-foreground"
+                />
+              </FormControl>
+              <p className="text-xs text-muted-foreground">
+                Email tidak dapat diubah melalui halaman ini
+              </p>
+            </FormItem>
+
+            <Button type="submit" disabled={profilePending} className="mt-2">
+              {profilePending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Simpan Profil
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
       </motion.div>
 
       {/* Password Section */}
@@ -141,43 +172,63 @@ export function SettingsClient({ user }: SettingsClientProps) {
           </div>
         </div>
 
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="password">Password Baru</Label>
-            <Input
-              id="password"
+        <Form {...passwordForm}>
+          <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+            <FormField
+              control={passwordForm.control}
               name="password"
-              type="password"
-              placeholder="Min. 6 karakter"
-              disabled={passwordPending}
-              className="h-11"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password Baru</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Min. 6 karakter"
+                      disabled={passwordPending}
+                      className="h-11"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              placeholder="Ulangi password baru"
-              disabled={passwordPending}
-              className="h-11"
+
+            <FormField
+              control={passwordForm.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Konfirmasi Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Ulangi password baru"
+                      disabled={passwordPending}
+                      className="h-11"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <Button type="submit" variant="outline" disabled={passwordPending}>
-            {passwordPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Memperbarui...
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 mr-2" />
-                Perbarui Password
-              </>
-            )}
-          </Button>
-        </form>
+
+            <Button type="submit" variant="outline" disabled={passwordPending}>
+              {passwordPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Memperbarui...
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 mr-2" />
+                  Perbarui Password
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
       </motion.div>
 
       {/* App Info */}

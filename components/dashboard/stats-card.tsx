@@ -23,7 +23,7 @@ interface StatsCardProps {
   index?: number;
 }
 
-export function StatsCard({ title, value, type = "default", trend, icon, className, index = 0 }: StatsCardProps) {
+export function StatsCard({ title, value, subtitle, type = "default", trend, icon, className, index = 0 }: StatsCardProps) {
   const isIncome = type === "income" || type === "emerald";
   const isExpense = type === "expense" || type === "red";
   
@@ -57,11 +57,14 @@ export function StatsCard({ title, value, type = "default", trend, icon, classNa
             </div>
           </div>
           
-          <div className="mt-auto">
-            <h3 className={cn(
-              "text-2xl font-bold tracking-tight",
-              isIncome ? "text-emerald-500" : isExpense ? "text-red-400" : "text-foreground"
-            )}>
+          <div className="mt-auto overflow-hidden">
+            <h3 
+              title={value}
+              className={cn(
+                "text-lg sm:text-xl lg:text-2xl font-bold tracking-tight truncate",
+                isIncome ? "text-emerald-500" : isExpense ? "text-red-400" : "text-foreground"
+              )}
+            >
               {value}
             </h3>
             
@@ -71,6 +74,12 @@ export function StatsCard({ title, value, type = "default", trend, icon, classNa
                 trend.isPositive ? "text-emerald-500" : "text-red-500"
               )}>
                 {trend.isPositive ? "+" : ""}{trend.value}% dari bulan lalu
+              </p>
+            )}
+            
+            {subtitle && !trend && (
+              <p className="text-xs font-medium text-muted-foreground mt-1 truncate">
+                {subtitle}
               </p>
             )}
           </div>

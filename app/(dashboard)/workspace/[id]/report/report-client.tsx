@@ -142,42 +142,64 @@ export function ReportClient({
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
       
-      // Header Background (Emerald)
-      doc.setFillColor(16, 185, 129); // emerald-500
-      doc.rect(0, 0, pageWidth, 40, "F");
-      
       // Header Text
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text("LAPORAN KEUANGAN", 14, 22);
+      doc.text("Laporan Keuangan", 14, 20);
       
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Workspace: ${workspace.name}`, 14, 30);
-      doc.text(`Periode: ${formatDate(initialFrom)} s/d ${formatDate(initialTo)}`, 14, 35);
-      
-      // Reset text color for body
-      doc.setTextColor(50, 50, 50);
+      doc.text(`Workspace: ${workspace.name}`, 14, 28);
+      doc.text(`Periode: ${formatDate(initialFrom)} s/d ${formatDate(initialTo)}`, 14, 33);
+      doc.text(`Tanggal Cetak: ${formatDate(new Date().toISOString())}`, 14, 38);
       
       // Summary Cards
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text("Ringkasan", 14, 50);
+      const cardY = 45;
+      const cardHeight = 18;
+      const cardWidth = (pageWidth - 28 - 8) / 3; // 14 margin L/R, 4 gap x 2
       
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text(`Total Pemasukan: ${formatRupiah(totalIncome)}`, 14, 56);
-      doc.text(`Total Pengeluaran: ${formatRupiah(totalExpense)}`, 80, 56);
-      doc.text(`Saldo Akhir: ${formatRupiah(finalBalance)}`, 150, 56);
-
-      // Line separator
       doc.setDrawColor(200, 200, 200);
-      doc.line(14, 60, pageWidth - 14, 60);
+      doc.setLineWidth(0.5);
+      
+      // Card 1: Pemasukan
+      doc.rect(14, cardY, cardWidth, cardHeight);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Total Pemasukan", 14 + 4, cardY + 6);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(formatRupiah(totalIncome), 14 + 4, cardY + 14);
+      
+      // Card 2: Pengeluaran
+      const card2X = 14 + cardWidth + 4;
+      doc.rect(card2X, cardY, cardWidth, cardHeight);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
+      doc.text("Total Pengeluaran", card2X + 4, cardY + 6);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(formatRupiah(totalExpense), card2X + 4, cardY + 14);
+      
+      // Card 3: Saldo Akhir
+      const card3X = card2X + cardWidth + 4;
+      doc.rect(card3X, cardY, cardWidth, cardHeight);
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont("helvetica", "normal");
+      doc.text("Saldo Akhir", card3X + 4, cardY + 6);
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(formatRupiah(finalBalance), card3X + 4, cardY + 14);
 
+      // Table
       autoTable(doc, {
-        startY: 65,
-        head: [["No", "Tanggal", "Keterangan", "Masuk", "Keluar", "Saldo"]],
+        startY: cardY + cardHeight + 8,
+        head: [["No", "Tanggal", "Keterangan", "Pemasukan", "Pengeluaran", "Saldo Berjalan"]],
         body: [
           ...transactionsWithBalance.map((t, i) => [
             i + 1,
@@ -189,41 +211,40 @@ export function ReportClient({
           ]),
           ["", "", "TOTAL", formatRupiah(totalIncome), formatRupiah(totalExpense), formatRupiah(finalBalance)],
         ],
-        theme: 'striped',
+        theme: "plain",
         styles: { 
-          fontSize: 8,
-          cellPadding: 3,
-          textColor: [60, 60, 60],
+          fontSize: 9,
+          cellPadding: 4,
+          textColor: [0, 0, 0],
+          lineColor: [220, 220, 220],
+          lineWidth: 0.1,
         },
         headStyles: { 
-          fillColor: [240, 243, 245], 
-          textColor: [40, 40, 40],
+          fillColor: [240, 240, 240],
+          textColor: [0, 0, 0],
           fontStyle: "bold",
-          lineWidth: 0.1,
-          lineColor: [200, 200, 200]
         },
-        alternateRowStyles: {
-          fillColor: [250, 252, 253]
+        columnStyles: {
+          0: { halign: "center", cellWidth: 10 },
+          1: { cellWidth: 25 },
+          3: { halign: "right", cellWidth: 32 },
+          4: { halign: "right", cellWidth: 32 },
+          5: { halign: "right", cellWidth: 32 },
         },
-        footStyles: { 
-          fontStyle: "bold",
-          fillColor: [255, 255, 255],
-          textColor: [20, 20, 20],
-          lineWidth: 0.5,
-          lineColor: [150, 150, 150]
+        didParseCell: function(data) {
+          if (data.row.index === data.table.body.length - 1 && data.section === "body") {
+             data.cell.styles.fontStyle = "bold";
+             data.cell.styles.fillColor = [245, 245, 245];
+          }
         },
-        margin: { top: 65, bottom: 30 },
+        margin: { top: 20, bottom: 25 },
         didDrawPage: function (data) {
-          // Footer / Signature Area
-          const footerY = pageHeight - 30;
-          
+          const footerY = pageHeight - 15;
           doc.setFontSize(8);
           doc.setTextColor(150, 150, 150);
-          doc.text(
-            `Halaman ${data.pageNumber} — Dicetak pada ${formatDate(new Date().toISOString())} melalui aplikasi KasKu`,
-            14,
-            footerY + 15
-          );
+          doc.setFont("helvetica", "normal");
+          doc.text("Dicetak melalui KasKu", 14, footerY);
+          doc.text(`Halaman ${data.pageNumber}`, pageWidth - 14, footerY, { align: "right" });
         }
       });
 

@@ -18,7 +18,7 @@ export default async function WorkspacesLayout({
     <div className="min-h-screen bg-background">
       <Sidebar user={user} />
       <MobileNav user={user} />
-      <main className="lg:ml-60 min-h-screen">
+      <main className="main-content min-h-screen">
         <div className="pt-14 lg:pt-0">{children}</div>
       </main>
     </div>

@@ -44,6 +44,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import type { Transaction, PaginatedResponse } from "@/types";
 
 interface TransactionTableProps {
@@ -249,15 +256,25 @@ export function TransactionTable({
 
   if (data.data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mb-4">
-          <TrendingUp className="w-7 h-7 text-muted-foreground" />
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card/30 border border-border/50 rounded-2xl glass relative overflow-hidden"
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 blur-3xl rounded-full opacity-50" />
+        <div className="relative z-10">
+          <motion.div 
+            whileHover={{ scale: 1.05, rotate: -5 }}
+            className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-primary/20 shadow-md shadow-primary/5"
+          >
+            <TrendingUp className="w-8 h-8 text-primary" />
+          </motion.div>
+          <h3 className="text-xl font-bold mb-2">Belum ada transaksi</h3>
+          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            Catat pemasukan dan pengeluaran pertama Anda di workspace ini dengan menekan tombol <strong>Tambah Transaksi</strong>.
+          </p>
         </div>
-        <p className="font-medium mb-1">Belum ada transaksi</p>
-        <p className="text-sm text-muted-foreground">
-          Klik tombol "Tambah Transaksi" untuk mulai mencatat
-        </p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -293,20 +310,39 @@ export function TransactionTable({
           <tbody className="divide-y divide-border">
             <AnimatePresence initial={false}>
               {table.getRowModel().rows.map((row, i) => (
-                <motion.tr
-                  key={row.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3.5">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </motion.tr>
+                <ContextMenu key={row.id}>
+                  <ContextMenuTrigger
+                    render={
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="hover:bg-muted/30 transition-colors"
+                      />
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 py-3.5">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-48">
+                    <ContextMenuItem onClick={() => onEdit(row.original)}>
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Edit Transaksi
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => setDeleteTarget(row.original)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Hapus
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               ))}
             </AnimatePresence>
           </tbody>

@@ -84,21 +84,21 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
           title="Saldo Saat Ini"
           value={formatRupiah(workspace.balance)}
           icon={Wallet}
-          color={workspace.balance >= 0 ? "emerald" : "red"}
+          type={workspace.balance >= 0 ? "emerald" : "red"}
           index={0}
         />
         <StatsCard
           title="Total Pemasukan"
           value={formatRupiah(workspace.total_income)}
           icon={TrendingUp}
-          color="emerald"
+          type="emerald"
           index={1}
         />
         <StatsCard
           title="Total Pengeluaran"
           value={formatRupiah(workspace.total_expense)}
           icon={TrendingDown}
-          color="red"
+          type="red"
           index={2}
         />
         <StatsCard
@@ -106,7 +106,7 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
           value={workspace.transaction_count.toString()}
           subtitle="total transaksi"
           icon={Activity}
-          color="blue"
+          type="blue"
           index={3}
         />
       </div>

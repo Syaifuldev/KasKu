@@ -37,7 +37,7 @@ export default async function WorkspaceLayout({ children, params }: Props) {
       />
 
       {/* Main content */}
-      <main className="lg:ml-60 min-h-screen">
+      <main className="main-content min-h-screen">
         <div className="pt-14 lg:pt-0">{children}</div>
       </main>
     </div>

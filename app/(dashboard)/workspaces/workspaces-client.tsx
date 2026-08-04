@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FolderOpen, Archive } from "lucide-react";
+import { Plus, FolderOpen, Archive, Wallet } from "lucide-react";
 import { WorkspaceCard } from "@/components/workspace/workspace-card";
 import { WorkspaceForm } from "@/components/workspace/workspace-form";
 import { Button } from "@/components/ui/button";
@@ -125,22 +125,34 @@ export function WorkspacesClient({ initialWorkspaces }: WorkspacesClientProps) {
 
 function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-20 text-center"
+      className="text-center py-24 px-4 bg-card/50 border border-border/50 rounded-3xl glass relative overflow-hidden"
     >
-      <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mb-6">
-        <FolderOpen className="w-10 h-10 text-muted-foreground" />
+      {/* Decorative background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 blur-3xl rounded-full opacity-50" />
+      
+      <div className="relative z-10">
+        <motion.div 
+          whileHover={{ scale: 1.05, rotate: 5 }}
+          className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20 shadow-lg shadow-primary/10"
+        >
+          <Wallet className="w-10 h-10 text-primary" />
+        </motion.div>
+        <h2 className="text-2xl font-bold mb-3">Belum ada workspace</h2>
+        <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-8">
+          Buat workspace pertama Anda untuk mulai mengelola keuangan, memantau pengeluaran, dan mencapai target finansial Anda.
+        </p>
+        <Button 
+          onClick={onCreateNew} 
+          size="lg"
+          className="shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all rounded-xl"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Buat Workspace
+        </Button>
       </div>
-      <h2 className="text-xl font-semibold mb-2">Belum ada workspace</h2>
-      <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-        Buat workspace pertama Anda untuk mulai mencatat pemasukan dan pengeluaran kas
-      </p>
-      <Button onClick={onCreateNew} className="shadow-lg shadow-primary/20">
-        <Plus className="w-4 h-4 mr-2" />
-        Buat Workspace Pertama
-      </Button>
     </motion.div>
   );
 }

@@ -15,10 +15,15 @@ import {
   LogOut,
   Wallet2,
   ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/actions/auth.actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeSwitcher } from "@/components/layout/theme-switcher";
+import { CommandPalette } from "@/components/layout/command-palette";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -50,6 +55,16 @@ interface SidebarProps {
 
 export function Sidebar({ user, workspaceId }: SidebarProps) {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Sync with body for layout margin adjustment
+  useEffect(() => {
+    if (isCollapsed) {
+      document.body.classList.add("sidebar-collapsed");
+    } else {
+      document.body.classList.remove("sidebar-collapsed");
+    }
+  }, [isCollapsed]);
 
   const dashboardItems = workspaceId
     ? [
@@ -75,14 +90,40 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
     : [];
 
   return (
-    <aside className="hidden lg:flex flex-col w-60 h-screen border-r border-border bg-sidebar fixed left-0 top-0 z-30">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md shadow-primary/30 flex-shrink-0">
-          <Wallet className="w-4 h-4 text-primary-foreground" />
-        </div>
-        <span className="font-bold text-lg tracking-tight">KasKu</span>
+    <aside 
+      className={cn(
+        "hidden lg:flex flex-col h-screen border-r border-border bg-sidebar fixed left-0 top-0 z-30 transition-all duration-300 ease-in-out",
+        isCollapsed ? "w-16" : "w-60"
+      )}
+    >
+      {/* Header & Toggle */}
+      <div className={cn(
+        "flex items-center py-4 border-b border-border transition-all",
+        isCollapsed ? "justify-center px-0" : "justify-between px-4"
+      )}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md shadow-primary/30 flex-shrink-0">
+              <Wallet className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-lg tracking-tight truncate">KasKu</span>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/50 transition-colors"
+          title={isCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+        >
+          {isCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-4 h-4" />}
+        </button>
       </div>
+
+      {/* Search / Command Palette */}
+      {!isCollapsed && (
+        <div className="pt-4 pb-2">
+          <CommandPalette />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
@@ -96,6 +137,7 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
                 ? pathname === item.href
                 : pathname.startsWith(item.href)
             }
+            isCollapsed={isCollapsed}
           />
         ))}
 
@@ -103,8 +145,8 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
         {dashboardItems.length > 0 && (
           <>
             <div className="pt-3 pb-1">
-              <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider px-3">
-                Workspace Ini
+              <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider px-3 truncate">
+                {!isCollapsed && "Workspace Ini"}
               </p>
             </div>
             {dashboardItems.map((item) => (
@@ -116,6 +158,7 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
                     ? pathname === item.href
                     : pathname.startsWith(item.href)
                 }
+                isCollapsed={isCollapsed}
               />
             ))}
           </>
@@ -126,26 +169,39 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
           <NavItem
             item={NAV_ITEMS[1]}
             isActive={pathname.startsWith(NAV_ITEMS[1].href)}
+            isCollapsed={isCollapsed}
           />
         </div>
       </nav>
 
+      {/* Theme Switcher */}
+      {!isCollapsed && (
+        <div className="px-3 pb-3">
+          <ThemeSwitcher />
+        </div>
+      )}
+
       {/* User profile */}
       <div className="border-t border-border p-3">
-        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-sidebar-accent transition-colors group">
+        <div className={cn(
+          "flex items-center gap-3 p-2 rounded-xl transition-colors group",
+          !isCollapsed && "hover:bg-sidebar-accent"
+        )}>
           <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
               {user?.name ? getInitials(user.name) : "?"}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {user?.name ?? "Pengguna"}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-            </p>
-          </div>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {user?.name ?? "Pengguna"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+          )}
           <Tooltip>
             <TooltipTrigger
               onClick={() => logout()}
@@ -165,9 +221,10 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
 interface NavItemProps {
   item: { href: string; label: string; icon: React.ElementType };
   isActive: boolean;
+  isCollapsed: boolean;
 }
 
-function NavItem({ item, isActive }: NavItemProps) {
+function NavItem({ item, isActive, isCollapsed }: NavItemProps) {
   const Icon = item.icon;
 
   return (
@@ -175,16 +232,18 @@ function NavItem({ item, isActive }: NavItemProps) {
       <motion.div
         whileTap={{ scale: 0.98 }}
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative",
+          "flex items-center gap-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 group relative",
+          isCollapsed ? "justify-center px-0" : "px-3",
           isActive
-            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-            : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+            ? "bg-muted text-foreground"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
         )}
+        title={isCollapsed ? item.label : undefined}
       >
-        <Icon className="w-4 h-4 flex-shrink-0" />
-        <span>{item.label}</span>
-        {isActive && (
-          <ChevronRight className="w-3 h-3 ml-auto opacity-60" />
+        <Icon className={cn("w-4 h-4 flex-shrink-0", isActive && "text-primary")} />
+        {!isCollapsed && <span>{item.label}</span>}
+        {!isCollapsed && isActive && (
+          <ChevronRight className="w-3 h-3 ml-auto opacity-40" />
         )}
       </motion.div>
     </Link>

@@ -18,12 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { Workspace } from "@/types";
 
@@ -94,16 +94,16 @@ export function WorkspaceForm({ open, onOpenChange, workspace }: WorkspaceFormPr
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle>{isEdit ? "Edit Workspace" : "Buat Workspace Baru"}</SheetTitle>
-          <SheetDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="mb-4">
+          <DialogTitle>{isEdit ? "Edit Workspace" : "Buat Workspace Baru"}</DialogTitle>
+          <DialogDescription>
             {isEdit
               ? "Perbarui informasi workspace Anda"
               : "Buat wadah pencatatan kas baru"}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Preview */}
         <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-xl mb-6">
@@ -214,7 +214,7 @@ export function WorkspaceForm({ open, onOpenChange, workspace }: WorkspaceFormPr
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

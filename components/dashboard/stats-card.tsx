@@ -13,7 +13,7 @@ interface StatsCardProps {
   title: string;
   value: string;
   subtitle?: string;
-  icon: LucideIcon;
+  icon: React.ReactNode;
   type?: "income" | "expense" | "default" | "emerald" | "red" | "blue";
   trend?: {
     value: number;
@@ -23,7 +23,7 @@ interface StatsCardProps {
   index?: number;
 }
 
-export function StatsCard({ title, value, type = "default", trend, icon: Icon, className, index = 0 }: StatsCardProps) {
+export function StatsCard({ title, value, type = "default", trend, icon, className, index = 0 }: StatsCardProps) {
   const isIncome = type === "income" || type === "emerald";
   const isExpense = type === "expense" || type === "red";
   
@@ -51,7 +51,9 @@ export function StatsCard({ title, value, type = "default", trend, icon: Icon, c
               : isExpense ? "bg-red-500/10 text-red-500 group-hover:bg-red-500/20"
               : "bg-primary/10 text-primary group-hover:bg-primary/20"
             )}>
-              <Icon className="w-4 h-4" />
+              <div className="w-4 h-4 flex items-center justify-center">
+                {icon}
+              </div>
             </div>
           </div>
           

@@ -80,6 +80,7 @@ export async function getMonthlyChartData(workspaceId: string): Promise<MonthlyC
   }
 
   for (const t of transactions) {
+    if (!t.date) continue;
     const [year, month] = t.date.split("-");
     const key = `${year}-${month}`;
     const entry = monthMap.get(key);

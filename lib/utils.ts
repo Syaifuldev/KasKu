@@ -48,7 +48,12 @@ export function formatCompact(amount: number): string {
  * @example formatDate("2024-01-15") => "15 Januari 2024"
  */
 export function formatDate(date: string | Date): string {
-  return format(new Date(date), "d MMMM yyyy", { locale: localeId });
+  if (!date) return "-";
+  try {
+    return format(new Date(date), "d MMMM yyyy", { locale: localeId });
+  } catch {
+    return "-";
+  }
 }
 
 /**
@@ -56,7 +61,12 @@ export function formatDate(date: string | Date): string {
  * @example formatDateShort("2024-01-15") => "15 Jan 2024"
  */
 export function formatDateShort(date: string | Date): string {
-  return format(new Date(date), "d MMM yyyy", { locale: localeId });
+  if (!date) return "-";
+  try {
+    return format(new Date(date), "d MMM yyyy", { locale: localeId });
+  } catch {
+    return "-";
+  }
 }
 
 /**

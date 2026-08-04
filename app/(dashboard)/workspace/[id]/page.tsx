@@ -20,6 +20,7 @@ import { getCurrentUser } from "@/lib/actions/auth.actions";
 import dynamic from "next/dynamic";
 import { StatsCard } from "@/components/dashboard/stats-card";
 const MonthlyChart = dynamic(() => import("@/components/dashboard/monthly-chart").then((mod) => mod.MonthlyChart), {
+  ssr: false,
   loading: () => <div className="h-[300px] w-full bg-muted/20 animate-pulse rounded-xl border border-border"></div>,
 });
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";

@@ -205,7 +205,7 @@ export function ReportClient({
       // Table
       autoTable(doc, {
         startY: tableTitleY + 8,
-        head: [["No", "Tanggal", "Keterangan", "Masuk", "Keluar", "Saldo"]],
+        head: [["No", "Tanggal", "Keterangan", "Pemasukan", "Pengeluaran", "Saldo Berjalan"]],
         body: [
           ...transactionsWithBalance.map((t, i) => [
             i + 1,
@@ -220,37 +220,46 @@ export function ReportClient({
         theme: "plain",
         styles: { 
           fontSize: 9,
-          cellPadding: 5,
+          cellPadding: { top: 4, bottom: 4, left: 3, right: 3 },
           textColor: [60, 60, 60],
-          lineColor: [230, 230, 230],
-          lineWidth: 0.1,
+          lineColor: [220, 220, 220],
+          lineWidth: 0.2,
+          valign: "middle",
+          overflow: "linebreak",
         },
         headStyles: { 
-          fillColor: [34, 197, 94], // Green header
+          fillColor: [34, 197, 94],
           textColor: [255, 255, 255],
           fontStyle: "bold",
+          cellPadding: { top: 5, bottom: 5, left: 3, right: 3 },
+          halign: "center",
         },
         alternateRowStyles: {
-          fillColor: [250, 253, 251] // light green alternate
+          fillColor: [250, 253, 251],
         },
         columnStyles: {
-          0: { halign: "center", cellWidth: 10 },
-          1: { cellWidth: 25 },
-          3: { halign: "right", cellWidth: 32, textColor: [34, 197, 94] },
-          4: { halign: "right", cellWidth: 32, textColor: [239, 68, 68] },
-          5: { halign: "right", cellWidth: 32, fontStyle: "bold" },
+          0: { halign: "center", cellWidth: 12 },
+          1: { cellWidth: 28, halign: "left" },
+          2: { halign: "left" },  // Keterangan: fills remaining space
+          3: { halign: "right", cellWidth: 34, textColor: [34, 197, 94] },
+          4: { halign: "right", cellWidth: 34, textColor: [239, 68, 68] },
+          5: { halign: "right", cellWidth: 34, fontStyle: "bold", textColor: [30, 30, 30] },
         },
         didParseCell: function(data) {
+          // Style TOTAL row
           if (data.row.index === data.table.body.length - 1 && data.section === "body") {
              data.cell.styles.fontStyle = "bold";
-             data.cell.styles.fillColor = [240, 253, 244]; // emerald-50
-             data.cell.styles.textColor = [30, 30, 30]; 
+             data.cell.styles.fillColor = [240, 253, 244];
+             data.cell.styles.textColor = [30, 30, 30];
+             if (data.column.index === 3) data.cell.styles.textColor = [34, 197, 94];
+             if (data.column.index === 4) data.cell.styles.textColor = [239, 68, 68];
           }
         },
-        margin: { top: 20, bottom: 40 },
+        margin: { left: 14, right: 14, top: 20, bottom: 40 },
+        tableWidth: "auto",
         didDrawPage: function (data) {
           const footerY = pageHeight - 15;
-          doc.setDrawColor(220, 220, 220);
+          doc.setDrawColor(200, 200, 200);
           doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
           
           doc.setFontSize(8);

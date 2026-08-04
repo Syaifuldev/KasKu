@@ -170,7 +170,6 @@ export function TransactionForm({
                 type="number"
                 placeholder="0"
                 min="0"
-                step="1000"
                 className="pl-9 h-11"
                 {...register("amount", { valueAsNumber: true })}
                 disabled={isPending}

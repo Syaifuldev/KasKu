@@ -9,7 +9,6 @@ import {
   TrendingUp,
   TrendingDown,
   Activity,
-  Plus,
   ArrowUpRight,
   Receipt,
 } from "lucide-react";
@@ -20,6 +19,7 @@ import { WorkspaceDashboardClient } from "./workspace-dashboard-client";
 import { formatRupiah, formatDateShort } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { WorkspaceIcon } from "@/components/workspace/workspace-icon";
+import { MobileFab } from "@/components/layout/mobile-fab";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -195,14 +195,10 @@ export default async function WorkspaceDashboardPage({ params }: Props) {
         </div>
 
         {/* ── Mobile FAB ── */}
-        <Link href={`/workspace/${workspace.id}/transactions`}>
-          <div
-            className="fixed bottom-[4.75rem] right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
-            aria-label="Tambah transaksi"
-          >
-            <Plus className="w-5 h-5" />
-          </div>
-        </Link>
+        <MobileFab
+          href={`/workspace/${workspace.id}/transactions`}
+          label="Tambah transaksi"
+        />
       </div>
     );
   } catch (error: any) {

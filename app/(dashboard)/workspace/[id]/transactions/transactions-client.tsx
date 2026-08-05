@@ -11,6 +11,7 @@ import { Plus, TrendingUp, TrendingDown } from "lucide-react";
 import { TransactionTable } from "@/components/transaction/transaction-table";
 import { TransactionFiltersBar } from "@/components/transaction/transaction-filters";
 import { TransactionForm } from "@/components/transaction/transaction-form";
+import { MobileFab } from "@/components/layout/mobile-fab";
 import { formatRupiah } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { WorkspaceWithStats, Transaction, PaginatedResponse, TransactionFilters } from "@/types";
@@ -183,15 +184,11 @@ export function TransactionsClient({
       />
 
       {/* ── Mobile FAB ── */}
-      <motion.button
-        whileTap={{ scale: 0.92 }}
+      <MobileFab
         onClick={openAddForm}
-        className="fixed bottom-[4.75rem] right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
-        aria-label="Tambah transaksi"
+        label="Tambah transaksi"
         id="btn-add-transaction-mobile"
-      >
-        <Plus className="w-5 h-5" />
-      </motion.button>
+      />
     </div>
   );
 }

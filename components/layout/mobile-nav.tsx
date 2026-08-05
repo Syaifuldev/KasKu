@@ -1,9 +1,12 @@
 /**
  * Mobile Navigation — Floating Bottom Tab Bar + Sticky Header
+ * Menggunakan createPortal agar fixed positioning tidak terpengaruh
+ * oleh parent transform dari framer-motion page transitions.
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,9 +34,14 @@ interface MobileNavProps {
 
 export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
-  // Bottom tab items — workspace-specific when inside workspace
+  // Tunggu mount agar createPortal tersedia di client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const tabItems = workspaceId
     ? [
         {
@@ -76,22 +84,21 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
         },
       ];
 
-  return (
+  const navContent = (
     <>
       {/* ─── Sticky Header ─── */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/60">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-[100] bg-background/90 backdrop-blur-xl border-b border-border/60">
         <div className="flex items-center justify-between px-4 h-14">
 
-          {/* Kiri: Kembali ke workspace list (jika dalam workspace) atau Logo */}
+          {/* Kiri: Back ke workspace list (jika dalam workspace) atau Logo */}
           <div className="flex items-center gap-2">
             {workspaceId ? (
-              /* Link kembali ke daftar workspace */
               <Link
                 href="/workspaces"
                 className="flex items-center gap-1.5 -ml-1 px-2 py-1.5 rounded-xl hover:bg-muted/60 transition-colors active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                <div className="w-7 h-7 bg-primary rounded-xl flex items-center justify-center shadow-sm">
+                <div className="w-7 h-7 bg-primary rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
                   <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
                 <div>
@@ -102,7 +109,6 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
                 </div>
               </Link>
             ) : (
-              /* Logo biasa di halaman non-workspace */
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-sm">
                   <Wallet className="w-4 h-4 text-primary-foreground" />
@@ -112,7 +118,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
             )}
           </div>
 
-          {/* Kanan: Avatar + Dropdown */}
+          {/* Kanan: Avatar */}
           <button
             onClick={() => setShowUserMenu((v) => !v)}
             className="flex items-center gap-1.5 p-1.5 rounded-xl hover:bg-muted/60 transition-colors"
@@ -141,7 +147,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 lg:hidden"
+              className="fixed inset-0 z-[99] lg:hidden"
               onClick={() => setShowUserMenu(false)}
             />
             <motion.div
@@ -149,7 +155,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="fixed top-[60px] right-3 z-50 w-60 bg-card border border-border rounded-2xl shadow-xl shadow-black/10 lg:hidden overflow-hidden"
+              className="fixed top-[60px] right-3 z-[101] w-60 bg-card border border-border rounded-2xl shadow-xl shadow-black/10 lg:hidden overflow-hidden"
             >
               <div className="px-4 py-3.5 border-b border-border/60">
                 <p className="text-sm font-semibold truncate">{user?.name ?? "Pengguna"}</p>
@@ -168,7 +174,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
       </AnimatePresence>
 
       {/* ─── Floating Bottom Tab Bar ─── */}
-      <nav className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
+      <nav className="lg:hidden fixed bottom-4 left-4 right-4 z-[100]">
         <div className="bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/25 border border-border/50 px-2 py-1">
           <div className="flex items-stretch">
             {tabItems.map((item) => {
@@ -188,7 +194,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
                   <motion.div
                     whileTap={{ scale: 0.88 }}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-colors relative",
+                      "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-colors",
                       isActive
                         ? "bg-primary/8 text-primary"
                         : "text-muted-foreground hover:text-foreground"
@@ -207,4 +213,11 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
       </nav>
     </>
   );
+
+  // Tidak tampilkan apapun saat SSR — hindari hydration mismatch
+  if (!mounted) return null;
+
+  // Render ke document.body via portal agar tidak terpengaruh
+  // parent transform dari framer-motion page transitions
+  return createPortal(navContent, document.body);
 }

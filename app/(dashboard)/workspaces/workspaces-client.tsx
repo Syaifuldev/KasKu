@@ -10,6 +10,7 @@ import { Plus, FolderOpen, Archive, Wallet } from "lucide-react";
 import { WorkspaceCard } from "@/components/workspace/workspace-card";
 import { WorkspaceForm } from "@/components/workspace/workspace-form";
 import { Button } from "@/components/ui/button";
+import { MobileFab } from "@/components/layout/mobile-fab";
 import type { WorkspaceWithStats, Workspace } from "@/types";
 
 interface WorkspacesClientProps {
@@ -123,15 +124,11 @@ export function WorkspacesClient({ initialWorkspaces }: WorkspacesClientProps) {
       />
 
       {/* Mobile FAB */}
-      <motion.button
-        whileTap={{ scale: 0.92 }}
+      <MobileFab
         onClick={openCreateForm}
-        className="fixed bottom-[4.75rem] right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
-        aria-label="Buat workspace baru"
+        label="Buat workspace baru"
         id="btn-create-workspace-mobile"
-      >
-        <Plus className="w-5 h-5" />
-      </motion.button>
+      />
     </div>
   );
 }

@@ -29,7 +29,7 @@ export function MobileFab({ onClick, href, label = "Tambah", id }: MobileFabProp
   if (!mounted) return null;
 
   const fabClass =
-    "fixed bottom-[4.75rem] right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-[99]";
+    "fixed bottom-28 right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-[99]";
 
   const inner = <Plus className="w-5 h-5" />;
 

@@ -10,13 +10,13 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Wallet2,
   FileText,
   Settings,
   LogOut,
-  Wallet,
   ChevronDown,
   ChevronLeft,
 } from "lucide-react";
@@ -73,7 +73,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
         {
           href: "/workspaces",
           label: "Workspace",
-          icon: Wallet,
+          icon: Wallet2,
           matchExact: false,
         },
         {
@@ -95,12 +95,16 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
             {workspaceId ? (
               <Link
                 href="/workspaces"
-                className="flex items-center gap-1.5 -ml-1 px-2 py-1.5 rounded-xl hover:bg-muted/60 transition-colors active:scale-95"
+                className="flex items-center gap-2 -ml-1 px-2 py-1.5 rounded-xl hover:bg-muted/60 transition-colors active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                <div className="w-7 h-7 bg-primary rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
-                </div>
+                <Image
+                  src="/icon.png"
+                  alt="KasKu"
+                  width={28}
+                  height={28}
+                  className="rounded-lg flex-shrink-0"
+                />
                 <div>
                   <span className="font-bold text-sm leading-none block">KasKu</span>
                   <span className="text-[11px] text-muted-foreground leading-none block mt-0.5 truncate max-w-[140px]">
@@ -109,10 +113,14 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
                 </div>
               </Link>
             ) : (
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-                  <Wallet className="w-4 h-4 text-primary-foreground" />
-                </div>
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/icon.png"
+                  alt="KasKu"
+                  width={32}
+                  height={32}
+                  className="rounded-xl"
+                />
                 <span className="font-bold text-sm">KasKu</span>
               </div>
             )}

@@ -5,6 +5,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -103,9 +104,13 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
       )}>
         {!isCollapsed && (
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md shadow-primary/30 flex-shrink-0">
-              <Wallet className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <Image
+              src="/icon.png"
+              alt="KasKu"
+              width={32}
+              height={32}
+              className="rounded-lg flex-shrink-0"
+            />
             <span className="font-bold text-lg tracking-tight truncate">KasKu</span>
           </div>
         )}

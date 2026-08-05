@@ -33,11 +33,20 @@ export const metadata: Metadata = {
   authors: [{ name: "KasKu" }],
   creator: "KasKu",
   metadataBase: new URL(appUrl),
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon.png", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "KasKu — Aplikasi Pencatatan Kas",
     description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
     url: appUrl,
     siteName: "KasKu",
+    images: [{ url: "/icon.png" }],
     locale: "id_ID",
     type: "website",
   },
@@ -45,6 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KasKu — Aplikasi Pencatatan Kas",
     description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
+    images: ["/icon.png"],
   },
   robots: {
     index: true,

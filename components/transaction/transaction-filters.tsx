@@ -1,19 +1,20 @@
 /**
- * Transaction Filters
- * Search, filter tanggal, filter jenis
+ * Transaction Filters — Mobile-first
+ * Search bar full-width + pill chips horizontal + date filter bottom sheet
  */
 "use client";
 
 import { useCallback, useState } from "react";
-import { Search, X, Filter } from "lucide-react";
+import { Search, X, CalendarDays, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { TransactionFilters } from "@/types";
@@ -23,13 +24,18 @@ interface TransactionFiltersBarProps {
   onChange: (filters: Partial<TransactionFilters>) => void;
 }
 
+const TYPE_OPTIONS = [
+  { value: "all", label: "Semua" },
+  { value: "income", label: "Masuk" },
+  { value: "expense", label: "Keluar" },
+] as const;
+
 export function TransactionFiltersBar({ filters, onChange }: TransactionFiltersBarProps) {
   const [searchValue, setSearchValue] = useState(filters.search ?? "");
-  const activeFiltersCount = [
-    filters.search,
-    filters.dateFrom,
-    filters.type && filters.type !== "all",
-  ].filter(Boolean).length;
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const hasDateFilter = !!(filters.dateFrom || filters.dateTo);
+  const currentType = filters.type ?? "all";
 
   // Debounce search
   const handleSearchChange = useCallback(
@@ -48,111 +54,128 @@ export function TransactionFiltersBar({ filters, onChange }: TransactionFiltersB
     onChange({ search: "", dateFrom: undefined, dateTo: undefined, type: "all", page: 1 });
   };
 
+  const handleClearDate = () => {
+    onChange({ dateFrom: undefined, dateTo: undefined, page: 1 });
+    setDateOpen(false);
+  };
+
+  const hasAnyFilter = !!(filters.search || filters.dateFrom || filters.dateTo || (filters.type && filters.type !== "all"));
+
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+    <div className="space-y-3">
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Cari keterangan..."
+          placeholder="Cari keterangan transaksi..."
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-9 h-9"
+          className="pl-10 h-11 rounded-xl bg-muted/50 border-border/60 focus:bg-background"
           id="search-transaction"
         />
         {searchValue && (
           <button
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Type Filter */}
-      <div className="flex items-center gap-1 p-0.5 bg-muted rounded-lg">
-        {[
-          { value: "all", label: "Semua" },
-          { value: "income", label: "Masuk" },
-          { value: "expense", label: "Keluar" },
-        ].map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => onChange({ type: opt.value as any, page: 1 })}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-              (filters.type ?? "all") === opt.value
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
+      {/* Filter row */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+        {/* Type pills */}
+        <div className="flex items-center gap-1.5 p-1 bg-muted/60 rounded-xl flex-shrink-0">
+          {TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onChange({ type: opt.value as any, page: 1 })}
+              className={cn(
+                "px-3.5 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap",
+                currentType === opt.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Date filter — sheet on mobile */}
+        <Sheet open={dateOpen} onOpenChange={setDateOpen}>
+          <SheetTrigger
+            render={
+              <button
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium rounded-xl border transition-all whitespace-nowrap flex-shrink-0",
+                  hasDateFilter
+                    ? "bg-primary/8 border-primary/30 text-primary"
+                    : "bg-background border-border/60 text-muted-foreground hover:text-foreground hover:border-border"
+                )}
+              />
+            }
           >
-            {opt.label}
+            <CalendarDays className="w-3.5 h-3.5" />
+            {hasDateFilter ? "Tanggal ✓" : "Tanggal"}
+            <ChevronDown className="w-3 h-3 ml-0.5" />
+          </SheetTrigger>
+          <SheetContent side="bottom" className="rounded-t-3xl pb-8">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-left">Filter Tanggal</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Dari tanggal</Label>
+                <Input
+                  type="date"
+                  value={filters.dateFrom ?? ""}
+                  onChange={(e) => onChange({ dateFrom: e.target.value || undefined, page: 1 })}
+                  className="h-12 rounded-xl text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Sampai tanggal</Label>
+                <Input
+                  type="date"
+                  value={filters.dateTo ?? ""}
+                  onChange={(e) => onChange({ dateTo: e.target.value || undefined, page: 1 })}
+                  className="h-12 rounded-xl text-base"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                {hasDateFilter && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-12 rounded-xl"
+                    onClick={handleClearDate}
+                  >
+                    Reset Tanggal
+                  </Button>
+                )}
+                <Button
+                  className="flex-1 h-12 rounded-xl"
+                  onClick={() => setDateOpen(false)}
+                >
+                  Terapkan
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Reset all */}
+        {hasAnyFilter && (
+          <button
+            onClick={handleClearAll}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-muted-foreground hover:text-destructive rounded-xl border border-border/60 transition-all whitespace-nowrap flex-shrink-0"
+          >
+            <X className="w-3.5 h-3.5" />
+            Reset
           </button>
-        ))}
+        )}
       </div>
-
-      {/* Date Filter */}
-      <Popover>
-        <PopoverTrigger
-          className={cn(
-            "inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9",
-            (filters.dateFrom || filters.dateTo) && "border-primary text-primary"
-          )}
-        >
-          <Filter className="w-3.5 h-3.5" />
-          Tanggal
-          {(filters.dateFrom || filters.dateTo) && (
-            <Badge className="h-4 px-1 text-[10px] ml-0.5">1</Badge>
-          )}
-        </PopoverTrigger>
-        <PopoverContent className="w-64" align="end">
-          <div className="space-y-3">
-            <p className="text-sm font-medium">Filter Tanggal</p>
-            <div className="space-y-2">
-              <Label className="text-xs">Dari</Label>
-              <Input
-                type="date"
-                value={filters.dateFrom ?? ""}
-                onChange={(e) => onChange({ dateFrom: e.target.value || undefined, page: 1 })}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Sampai</Label>
-              <Input
-                type="date"
-                value={filters.dateTo ?? ""}
-                onChange={(e) => onChange({ dateTo: e.target.value || undefined, page: 1 })}
-                className="h-8 text-sm"
-              />
-            </div>
-            {(filters.dateFrom || filters.dateTo) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-destructive hover:text-destructive"
-                onClick={() => onChange({ dateFrom: undefined, dateTo: undefined, page: 1 })}
-              >
-                Reset Tanggal
-              </Button>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-
-      {/* Clear all */}
-      {activeFiltersCount > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClearAll}
-          className="h-9 text-muted-foreground hover:text-foreground text-xs"
-        >
-          <X className="w-3.5 h-3.5 mr-1" />
-          Reset Filter
-        </Button>
-      )}
     </div>
   );
 }

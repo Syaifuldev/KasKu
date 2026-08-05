@@ -1,23 +1,12 @@
 /**
- * Transaction Table — TanStack Table dengan server-side pagination
- * Fitur: search, filter tanggal, sort, edit, delete, preview bukti
+ * Transaction List — Mobile-friendly card list
+ * Menggantikan tabel dengan list item yang mudah di-tap di HP
  */
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-  type Updater,
-} from "@tanstack/react-table";
+import { useState, useTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
   Edit2,
   Trash2,
   ExternalLink,
@@ -27,6 +16,7 @@ import {
   ChevronRight,
   TrendingUp,
   TrendingDown,
+  MoreVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/actions/transaction.actions";
@@ -45,13 +35,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Transaction, PaginatedResponse } from "@/types";
+import type { SortingState } from "@tanstack/react-table";
 
 interface TransactionTableProps {
   data: PaginatedResponse<Transaction>;
@@ -68,8 +59,6 @@ export function TransactionTable({
   data,
   workspaceId,
   isLoading,
-  sorting,
-  onSortingChange,
   page,
   onPageChange,
   onEdit,
@@ -90,165 +79,11 @@ export function TransactionTable({
     });
   };
 
-  const columns: ColumnDef<Transaction>[] = [
-    {
-      accessorKey: "date",
-      header: "Tanggal",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {formatDateShort(row.getValue("date"))}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "type",
-      header: "Jenis",
-      cell: ({ row }) => {
-        const type = row.getValue<string>("type");
-        return (
-          <Badge
-            variant="outline"
-            className={cn(
-              "gap-1 text-xs",
-              type === "income"
-                ? "badge-income"
-                : "badge-expense"
-            )}
-          >
-            {type === "income" ? (
-              <TrendingUp className="w-3 h-3" />
-            ) : (
-              <TrendingDown className="w-3 h-3" />
-            )}
-            {type === "income" ? "Masuk" : "Keluar"}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "description",
-      header: "Keterangan",
-      cell: ({ row }) => (
-        <p className="text-sm max-w-[200px] truncate">
-          {row.getValue("description")}
-        </p>
-      ),
-    },
-    {
-      accessorKey: "amount",
-      header: "Nominal",
-      cell: ({ row }) => {
-        const type = row.original.type;
-        const amount = Number(row.getValue("amount"));
-        return (
-          <span
-            className={cn(
-              "text-sm font-semibold whitespace-nowrap",
-              type === "income" ? "text-emerald-500" : "text-red-400"
-            )}
-          >
-            {type === "income" ? "+" : "-"}
-            {formatRupiah(amount)}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "receipt_url",
-      header: "Bukti",
-      enableSorting: false,
-      cell: ({ row }) => {
-        const url = row.getValue<string | null>("receipt_url");
-        if (!url) return <span className="text-xs text-muted-foreground/40">—</span>;
-        const isPdf = url.toLowerCase().includes(".pdf");
-        return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-          >
-            {isPdf ? (
-              <FileText className="w-3.5 h-3.5" />
-            ) : (
-              <ImageIcon className="w-3.5 h-3.5" />
-            )}
-            Lihat
-            <ExternalLink className="w-2.5 h-2.5" />
-          </a>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "",
-      enableSorting: false,
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1 justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => onEdit(row.original)}
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-            onClick={() => setDeleteTarget(row.original)}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
-  const table = useReactTable({
-    data: data.data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualSorting: true,
-    manualPagination: true,
-    pageCount: data.totalPages,
-    state: { sorting },
-    onSortingChange: (updaterOrValue: Updater<SortingState>) => {
-      const newSorting =
-        typeof updaterOrValue === "function"
-          ? updaterOrValue(sorting)
-          : updaterOrValue;
-      onSortingChange(newSorting);
-    },
-  });
-
-  const handleSort = (columnId: string) => {
-    const existing = sorting.find((s) => s.id === columnId);
-    if (!existing) {
-      onSortingChange([{ id: columnId, desc: true }]);
-    } else if (existing.desc) {
-      onSortingChange([{ id: columnId, desc: false }]);
-    } else {
-      onSortingChange([]);
-    }
-  };
-
-  const getSortIcon = (columnId: string) => {
-    const s = sorting.find((s) => s.id === columnId);
-    if (!s) return <ChevronsUpDown className="w-3 h-3 ml-1 opacity-40" />;
-    return s.desc ? (
-      <ChevronDown className="w-3 h-3 ml-1 text-primary" />
-    ) : (
-      <ChevronUp className="w-3 h-3 ml-1 text-primary" />
-    );
-  };
-
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-14 rounded-xl" />
+      <div className="space-y-2">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-[72px] rounded-2xl" />
         ))}
       </div>
     );
@@ -256,105 +91,136 @@ export function TransactionTable({
 
   if (data.data.length === 0) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card/30 border border-border/50 rounded-2xl glass relative overflow-hidden"
+        className="flex flex-col items-center justify-center py-16 px-4 text-center bg-card/50 border border-border/50 rounded-2xl"
       >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 blur-3xl rounded-full opacity-50" />
-        <div className="relative z-10">
-          <motion.div 
-            whileHover={{ scale: 1.05, rotate: -5 }}
-            className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-primary/20 shadow-md shadow-primary/5"
-          >
-            <TrendingUp className="w-8 h-8 text-primary" />
-          </motion.div>
-          <h3 className="text-xl font-bold mb-2">Belum ada transaksi</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            Catat pemasukan dan pengeluaran pertama Anda di workspace ini dengan menekan tombol <strong>Tambah Transaksi</strong>.
-          </p>
+        <div className="w-14 h-14 bg-primary/8 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/15">
+          <TrendingUp className="w-7 h-7 text-primary" />
         </div>
+        <h3 className="text-base font-semibold mb-1">Belum ada transaksi</h3>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Ketuk tombol <strong>+</strong> untuk mencatat pemasukan atau pengeluaran pertama.
+        </p>
       </motion.div>
     );
   }
 
   return (
     <>
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border bg-muted/30">
-              {table.getHeaderGroups().map((hg) =>
-                hg.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
-                  >
-                    {header.column.getCanSort() ? (
-                      <button
-                        onClick={() => handleSort(header.id)}
-                        className="flex items-center hover:text-foreground transition-colors"
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {getSortIcon(header.id)}
-                      </button>
-                    ) : (
-                      flexRender(header.column.columnDef.header, header.getContext())
+      {/* Transaction List */}
+      <div className="bg-card border border-border/50 rounded-2xl overflow-hidden divide-y divide-border/40">
+        <AnimatePresence initial={false}>
+          {data.data.map((tx, i) => (
+            <motion.div
+              key={tx.id}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ delay: i * 0.025, duration: 0.2 }}
+              className="flex items-center gap-3 px-4 py-3.5 active:bg-muted/40 transition-colors"
+            >
+              {/* Type Icon */}
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
+                  tx.type === "income" ? "bg-emerald-500/12" : "bg-red-500/12"
+                )}
+              >
+                {tx.type === "income" ? (
+                  <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="w-4.5 h-4.5 text-red-400" />
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{tx.description}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground">
+                    {formatDateShort(tx.date)}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "h-4 px-1.5 text-[10px] font-medium",
+                      tx.type === "income" ? "badge-income" : "badge-expense"
                     )}
-                  </th>
-                ))
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            <AnimatePresence initial={false}>
-              {table.getRowModel().rows.map((row, i) => (
-                <ContextMenu key={row.id}>
-                  <ContextMenuTrigger
+                  >
+                    {tx.type === "income" ? "Masuk" : "Keluar"}
+                  </Badge>
+                  {tx.receipt_url && (
+                    <a
+                      href={tx.receipt_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {tx.receipt_url.toLowerCase().includes(".pdf") ? (
+                        <FileText className="w-3 h-3" />
+                      ) : (
+                        <ImageIcon className="w-3 h-3" />
+                      )}
+                      Bukti
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span
+                  className={cn(
+                    "text-sm font-semibold",
+                    tx.type === "income" ? "text-emerald-500" : "text-red-400"
+                  )}
+                >
+                  {tx.type === "income" ? "+" : "-"}
+                  {formatRupiah(Number(tx.amount))}
+                </span>
+
+                {/* Action menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
                     render={
-                      <motion.tr
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ delay: i * 0.03 }}
-                        className="hover:bg-muted/30 transition-colors"
+                      <button
+                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/60 transition-colors"
+                        aria-label="Opsi transaksi"
                       />
                     }
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-3.5">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </ContextMenuTrigger>
-                  <ContextMenuContent className="w-48">
-                    <ContextMenuItem onClick={() => onEdit(row.original)}>
+                    <MoreVertical className="w-4 h-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem onClick={() => onEdit(tx)}>
                       <Edit2 className="w-4 h-4 mr-2" />
                       Edit Transaksi
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
-                      onClick={() => setDeleteTarget(row.original)}
+                      onClick={() => setDeleteTarget(tx)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Hapus
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-              ))}
-            </AnimatePresence>
-          </tbody>
-        </table>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {/* Pagination */}
       {data.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">
-            Menampilkan {(page - 1) * data.pageSize + 1}–
-            {Math.min(page * data.pageSize, data.count)} dari {data.count} transaksi
+        <div className="flex items-center justify-between mt-4 px-1">
+          <p className="text-xs text-muted-foreground">
+            {(page - 1) * data.pageSize + 1}–{Math.min(page * data.pageSize, data.count)} dari {data.count}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -362,10 +228,11 @@ export function TransactionTable({
               size="sm"
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
+              className="h-9 w-9 p-0 rounded-xl"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="text-sm font-medium px-1">
+            <span className="text-sm font-medium min-w-[52px] text-center">
               {page} / {data.totalPages}
             </span>
             <Button
@@ -373,6 +240,7 @@ export function TransactionTable({
               size="sm"
               onClick={() => onPageChange(page + 1)}
               disabled={page >= data.totalPages}
+              className="h-9 w-9 p-0 rounded-xl"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -380,25 +248,25 @@ export function TransactionTable({
         </div>
       )}
 
-      {/* Delete Dialog */}
+      {/* Delete Confirmation Dialog */}
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Transaksi?</AlertDialogTitle>
             <AlertDialogDescription>
-              Transaksi <strong>{deleteTarget?.description}</strong> akan dihapus
-              secara permanen.
+              <strong>{deleteTarget?.description}</strong> akan dihapus secara permanen.
+              Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl">Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
             >
               {isPending ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>

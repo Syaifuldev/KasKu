@@ -1,5 +1,6 @@
 /**
- * Workspaces Client — Interactive Workspace Grid
+ * Workspaces Client — Mobile-first grid
+ * 1 kolom di mobile, 2-3 kolom di desktop
  */
 "use client";
 
@@ -33,77 +34,88 @@ export function WorkspacesClient({ initialWorkspaces }: WorkspacesClientProps) {
     if (!open) setEditingWorkspace(null);
   };
 
+  const openCreateForm = () => {
+    setEditingWorkspace(null);
+    setFormOpen(true);
+  };
+
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Workspace</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {activeWorkspaces.length} workspace aktif
-          </p>
+    <div className="min-h-screen bg-background">
+
+      {/* ── Header ── */}
+      <div className="px-4 pt-5 pb-4 lg:px-8 lg:pt-8 bg-gradient-to-b from-muted/40 to-background">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">Workspace</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {activeWorkspaces.length} workspace aktif
+            </p>
+          </div>
+          {/* Desktop add button */}
+          <Button
+            onClick={openCreateForm}
+            className="hidden lg:flex shadow-lg shadow-primary/20"
+            id="btn-create-workspace"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Workspace Baru
+          </Button>
         </div>
-        <Button
-          onClick={() => { setEditingWorkspace(null); setFormOpen(true); }}
-          className="shadow-lg shadow-primary/20"
-          id="btn-create-workspace"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Workspace Baru
-        </Button>
       </div>
 
-      {/* Active Workspaces Grid */}
-      {activeWorkspaces.length === 0 ? (
-        <EmptyState onCreateNew={() => { setEditingWorkspace(null); setFormOpen(true); }} />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {activeWorkspaces.map((workspace, index) => (
-            <WorkspaceCard
-              key={workspace.id}
-              workspace={workspace}
-              onEdit={handleEdit}
-              index={index}
-            />
-          ))}
-        </div>
-      )}
+      <div className="px-4 lg:px-8">
+        {/* Active Workspaces */}
+        {activeWorkspaces.length === 0 ? (
+          <EmptyState onCreateNew={openCreateForm} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {activeWorkspaces.map((workspace, index) => (
+              <WorkspaceCard
+                key={workspace.id}
+                workspace={workspace}
+                onEdit={handleEdit}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* Archived Workspaces */}
-      {archivedWorkspaces.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-          >
-            <Archive className="w-4 h-4" />
-            Diarsipkan ({archivedWorkspaces.length})
-            <span className="text-xs">{showArchived ? "▲" : "▼"}</span>
-          </button>
+        {/* Archived Workspaces */}
+        {archivedWorkspaces.length > 0 && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3 py-2"
+            >
+              <Archive className="w-4 h-4" />
+              Diarsipkan ({archivedWorkspaces.length})
+              <span className="text-xs">{showArchived ? "▲" : "▼"}</span>
+            </button>
 
-          <AnimatePresence>
-            {showArchived && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
-              >
-                {archivedWorkspaces.map((workspace, index) => (
-                  <WorkspaceCard
-                    key={workspace.id}
-                    workspace={workspace}
-                    onEdit={handleEdit}
-                    index={index}
-                  />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+            <AnimatePresence>
+              {showArchived && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
+                  {archivedWorkspaces.map((workspace, index) => (
+                    <WorkspaceCard
+                      key={workspace.id}
+                      workspace={workspace}
+                      onEdit={handleEdit}
+                      index={index}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
-      {/* Workspace Form Sheet */}
+      {/* Workspace Form */}
       <WorkspaceForm
         open={formOpen}
         onOpenChange={handleCloseForm}
@@ -112,10 +124,11 @@ export function WorkspacesClient({ initialWorkspaces }: WorkspacesClientProps) {
 
       {/* Mobile FAB */}
       <motion.button
-        whileTap={{ scale: 0.93 }}
-        onClick={() => { setEditingWorkspace(null); setFormOpen(true); }}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-20"
+        whileTap={{ scale: 0.92 }}
+        onClick={openCreateForm}
+        className="fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
         aria-label="Buat workspace baru"
+        id="btn-create-workspace-mobile"
       >
         <Plus className="w-6 h-6" />
       </motion.button>
@@ -125,31 +138,29 @@ export function WorkspacesClient({ initialWorkspaces }: WorkspacesClientProps) {
 
 function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="text-center py-24 px-4 bg-card/50 border border-border/50 rounded-3xl glass relative overflow-hidden"
+      className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card/50 border border-border/50 rounded-2xl relative overflow-hidden"
     >
-      {/* Decorative background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 blur-3xl rounded-full opacity-50" />
-      
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 blur-3xl rounded-full opacity-50" />
       <div className="relative z-10">
-        <motion.div 
+        <motion.div
           whileHover={{ scale: 1.05, rotate: 5 }}
-          className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20 shadow-lg shadow-primary/10"
+          className="w-16 h-16 bg-primary/8 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-primary/15"
         >
-          <Wallet className="w-10 h-10 text-primary" />
+          <Wallet className="w-8 h-8 text-primary" />
         </motion.div>
-        <h2 className="text-2xl font-bold mb-3">Belum ada workspace</h2>
-        <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-8">
-          Buat workspace pertama Anda untuk mulai mengelola keuangan, memantau pengeluaran, dan mencapai target finansial Anda.
+        <h2 className="text-lg font-bold mb-2">Belum ada workspace</h2>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
+          Buat workspace untuk mulai mencatat keuangan Anda.
         </p>
-        <Button 
-          onClick={onCreateNew} 
-          size="lg"
-          className="shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all rounded-xl"
+        <Button
+          onClick={onCreateNew}
+          className="shadow-lg shadow-primary/20 rounded-xl px-6"
+          id="btn-create-workspace-empty"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4 mr-2" />
           Buat Workspace
         </Button>
       </div>

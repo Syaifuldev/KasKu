@@ -186,11 +186,11 @@ export function TransactionsClient({
       <motion.button
         whileTap={{ scale: 0.92 }}
         onClick={openAddForm}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
+        className="fixed bottom-[4.75rem] right-4 w-11 h-11 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 flex items-center justify-center lg:hidden z-30"
         aria-label="Tambah transaksi"
         id="btn-add-transaction-mobile"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-5 h-5" />
       </motion.button>
     </div>
   );

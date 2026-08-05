@@ -1,6 +1,5 @@
 /**
- * Mobile Navigation — Bottom Tab Bar + Sticky Header
- * Layout modern seperti app HP (Gojek, BCA Mobile, dll)
+ * Mobile Navigation — Floating Bottom Tab Bar + Sticky Header
  */
 "use client";
 
@@ -16,6 +15,7 @@ import {
   LogOut,
   Wallet,
   ChevronDown,
+  ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/actions/auth.actions";
@@ -33,7 +33,7 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
 
-  // Bottom tab items — hanya muncul jika di dalam workspace
+  // Bottom tab items — workspace-specific when inside workspace
   const tabItems = workspaceId
     ? [
         {
@@ -81,22 +81,38 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
       {/* ─── Sticky Header ─── */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/60">
         <div className="flex items-center justify-between px-4 h-14">
-          {/* Logo + Nama Workspace */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-sm">
-              <Wallet className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div>
-              <span className="font-bold text-sm leading-none block">KasKu</span>
-              {workspaceName && (
-                <span className="text-[11px] text-muted-foreground leading-none block mt-0.5 truncate max-w-[160px]">
-                  {workspaceName}
-                </span>
-              )}
-            </div>
+
+          {/* Kiri: Kembali ke workspace list (jika dalam workspace) atau Logo */}
+          <div className="flex items-center gap-2">
+            {workspaceId ? (
+              /* Link kembali ke daftar workspace */
+              <Link
+                href="/workspaces"
+                className="flex items-center gap-1.5 -ml-1 px-2 py-1.5 rounded-xl hover:bg-muted/60 transition-colors active:scale-95"
+              >
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                <div className="w-7 h-7 bg-primary rounded-xl flex items-center justify-center shadow-sm">
+                  <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm leading-none block">KasKu</span>
+                  <span className="text-[11px] text-muted-foreground leading-none block mt-0.5 truncate max-w-[140px]">
+                    {workspaceName}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              /* Logo biasa di halaman non-workspace */
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-sm">
+                  <Wallet className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <span className="font-bold text-sm">KasKu</span>
+              </div>
+            )}
           </div>
 
-          {/* Avatar + User Menu */}
+          {/* Kanan: Avatar + Dropdown */}
           <button
             onClick={() => setShowUserMenu((v) => !v)}
             className="flex items-center gap-1.5 p-1.5 rounded-xl hover:bg-muted/60 transition-colors"
@@ -135,13 +151,10 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
               transition={{ duration: 0.15 }}
               className="fixed top-[60px] right-3 z-50 w-60 bg-card border border-border rounded-2xl shadow-xl shadow-black/10 lg:hidden overflow-hidden"
             >
-              {/* User info */}
               <div className="px-4 py-3.5 border-b border-border/60">
                 <p className="text-sm font-semibold truncate">{user?.name ?? "Pengguna"}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               </div>
-
-              {/* Logout */}
               <button
                 onClick={() => logout()}
                 className="flex items-center gap-3 w-full px-4 py-3.5 text-sm text-destructive hover:bg-destructive/8 transition-colors"
@@ -154,48 +167,43 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
         )}
       </AnimatePresence>
 
-      {/* ─── Bottom Tab Bar ─── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/60">
-        <div className="flex items-stretch">
-          {tabItems.map((item) => {
-            const isActive =
-              item.matchExact
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
+      {/* ─── Floating Bottom Tab Bar ─── */}
+      <nav className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
+        <div className="bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/25 border border-border/50 px-2 py-1">
+          <div className="flex items-stretch">
+            {tabItems.map((item) => {
+              const isActive =
+                item.matchExact
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href);
+              const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex-1"
-                onClick={() => setShowUserMenu(false)}
-              >
-                <motion.div
-                  whileTap={{ scale: 0.92 }}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-1 py-2.5 px-1 transition-colors relative",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex-1"
+                  onClick={() => setShowUserMenu(false)}
                 >
-                  {/* Active indicator dot */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="tab-indicator"
-                      className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full"
-                    />
-                  )}
-                  <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
-                  <span className={cn("text-[10px] font-medium", isActive && "font-semibold")}>
-                    {item.label}
-                  </span>
-                </motion.div>
-              </Link>
-            );
-          })}
+                  <motion.div
+                    whileTap={{ scale: 0.88 }}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl transition-colors relative",
+                      isActive
+                        ? "bg-primary/8 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("w-5 h-5", isActive && "stroke-[2.5]")} />
+                    <span className={cn("text-[10px] font-medium", isActive && "font-semibold")}>
+                      {item.label}
+                    </span>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-        {/* Safe area bottom */}
-        <div className="h-safe-bottom" />
       </nav>
     </>
   );

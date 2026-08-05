@@ -242,7 +242,7 @@ export function ReportClient({
           fillColor: [252, 252, 252],
         },
         columnStyles: {
-          0: { halign: "center", cellWidth: 10 },
+          0: { halign: "center", cellWidth: 12 },
           1: { cellWidth: 26, halign: "left" },
           2: { halign: "left" },
           3: { halign: "right", cellWidth: 32, textColor: incomeColor },
@@ -302,11 +302,11 @@ export function ReportClient({
       
       sigY += 10;
       doc.text("Mengetahui,", 40, sigY, { align: "center" });
-      doc.text("Ketua / Pimpinan", 40, sigY + 5, { align: "center" });
+      doc.text("Ketua", 40, sigY + 5, { align: "center" });
       doc.text("( _____________________ )", 40, sigY + 25, { align: "center" });
       
       doc.text("Dibuat Oleh,", pageWidth - 40, sigY, { align: "center" });
-      doc.text("Bendahara / Keuangan", pageWidth - 40, sigY + 5, { align: "center" });
+      doc.text("Bendahara", pageWidth - 40, sigY + 5, { align: "center" });
       doc.text("( _____________________ )", pageWidth - 40, sigY + 25, { align: "center" });
 
       doc.save(`Laporan_${workspace.name.replace(/\s+/g, "_")}_${initialFrom}_${initialTo}.pdf`);

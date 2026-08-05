@@ -426,40 +426,40 @@ export function ReportClient({
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-card border border-emerald-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6">
+        <div className="bg-card border border-emerald-500/20 rounded-2xl p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
+            <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center shrink-0">
               <TrendingUp className="w-4 h-4 text-emerald-500" />
             </div>
-            <p className="text-sm text-muted-foreground">Total Pemasukan</p>
+            <p className="text-sm text-muted-foreground font-medium">Total Pemasukan</p>
           </div>
-          <p className="text-xl font-bold text-emerald-500">{formatRupiah(totalIncome)}</p>
+          <p className="text-xl sm:text-2xl font-bold text-emerald-500">{formatRupiah(totalIncome)}</p>
         </div>
-        <div className="bg-card border border-red-500/20 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center">
+        <div className="bg-card border border-red-500/20 rounded-2xl p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
+            <div className="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center shrink-0">
               <TrendingDown className="w-4 h-4 text-red-400" />
             </div>
-            <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
+            <p className="text-sm text-muted-foreground font-medium">Total Pengeluaran</p>
           </div>
-          <p className="text-xl font-bold text-red-400">{formatRupiah(totalExpense)}</p>
+          <p className="text-xl sm:text-2xl font-bold text-red-400">{formatRupiah(totalExpense)}</p>
         </div>
         <div className={cn(
-          "bg-card rounded-2xl p-5 border",
+          "bg-card rounded-2xl p-4 sm:p-5 border",
           finalBalance >= 0 ? "border-emerald-500/20" : "border-red-500/20"
         )}>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-2 sm:mb-3">
             <div className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center",
+              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
               finalBalance >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
             )}>
               <Wallet className={cn("w-4 h-4", finalBalance >= 0 ? "text-emerald-500" : "text-red-400")} />
             </div>
-            <p className="text-sm text-muted-foreground">Saldo Akhir</p>
+            <p className="text-sm text-muted-foreground font-medium">Saldo Akhir</p>
           </div>
           <p className={cn(
-            "text-xl font-bold",
+            "text-xl sm:text-2xl font-bold",
             finalBalance >= 0 ? "text-emerald-500" : "text-red-400"
           )}>
             {formatRupiah(finalBalance)}

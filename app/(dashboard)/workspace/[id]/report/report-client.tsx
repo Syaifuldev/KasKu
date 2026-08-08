@@ -298,16 +298,33 @@ export function ReportClient({
       doc.setTextColor(...textColor);
       
       // Date in signature
-      doc.text(`________________, ${formatDateShort(new Date().toISOString())}`, pageWidth - 14, sigY, { align: "right" });
+      doc.text(`Sragen, ${formatDateShort(new Date().toISOString())}`, pageWidth - 14, sigY, { align: "right" });
       
       sigY += 10;
       doc.text("Mengetahui,", 40, sigY, { align: "center" });
       doc.text("Ketua", 40, sigY + 5, { align: "center" });
-      doc.text("( _____________________ )", 40, sigY + 25, { align: "center" });
+      doc.text("( Danang Tri Wibowo )", 40, sigY + 30, { align: "center" });
       
       doc.text("Dibuat Oleh,", pageWidth - 40, sigY, { align: "center" });
       doc.text("Bendahara", pageWidth - 40, sigY + 5, { align: "center" });
-      doc.text("( _____________________ )", pageWidth - 40, sigY + 25, { align: "center" });
+      
+      try {
+        const imgRes = await fetch("/ttd-bend.png");
+        if (imgRes.ok) {
+          const imgBlob = await imgRes.blob();
+          const reader = new FileReader();
+          const imgData = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(imgBlob);
+          });
+          // Tambahkan gambar tanda tangan bendahara
+          doc.addImage(imgData, 'PNG', pageWidth - 56, sigY + 6, 32, 20);
+        }
+      } catch (err) {
+        console.error("Gagal memuat gambar tanda tangan:", err);
+      }
+
+      doc.text("( Ahmad S.A )", pageWidth - 40, sigY + 30, { align: "center" });
 
       doc.save(`Laporan_${workspace.name.replace(/\s+/g, "_")}_${initialFrom}_${initialTo}.pdf`);
       toast.success("File PDF berhasil diunduh");

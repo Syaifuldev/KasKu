@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
   Wallet2,
@@ -19,6 +20,9 @@ import {
   LogOut,
   ChevronDown,
   ChevronLeft,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/lib/actions/auth.actions";
@@ -32,10 +36,17 @@ interface MobileNavProps {
   workspaceName?: string;
 }
 
+const THEME_OPTIONS = [
+  { value: "light", icon: Sun, label: "Terang" },
+  { value: "system", icon: Monitor, label: "Sistem" },
+  { value: "dark", icon: Moon, label: "Gelap" },
+] as const;
+
 export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   // Tunggu mount agar createPortal tersedia di client
   useEffect(() => {
@@ -126,26 +137,49 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
             )}
           </div>
 
-          {/* Kanan: Avatar hanya di luar workspace */}
-          {!workspaceId && (
-            <button
-              onClick={() => setShowUserMenu((v) => !v)}
-              className="flex items-center gap-1.5 p-1.5 rounded-xl hover:bg-muted/60 transition-colors"
-              aria-label="Menu pengguna"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">
-                  {user?.name ? getInitials(user.name) : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <ChevronDown
-                className={cn(
-                  "w-3.5 h-3.5 text-muted-foreground transition-transform duration-200",
-                  showUserMenu && "rotate-180"
-                )}
-              />
-            </button>
-          )}
+          {/* Kanan */}
+          <div className="flex items-center gap-1">
+            {/* Theme toggle — selalu tampil (workspace & non-workspace) */}
+            <div className="flex items-center gap-0.5 bg-muted/60 p-1 rounded-xl border border-border/50">
+              {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setTheme(value)}
+                  title={label}
+                  aria-label={label}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all",
+                    theme === value
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </button>
+              ))}
+            </div>
+
+            {/* Avatar — hanya di luar workspace */}
+            {!workspaceId && (
+              <button
+                onClick={() => setShowUserMenu((v) => !v)}
+                className="flex items-center gap-1 p-1.5 rounded-xl hover:bg-muted/60 transition-colors ml-0.5"
+                aria-label="Menu pengguna"
+              >
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold">
+                    {user?.name ? getInitials(user.name) : "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <ChevronDown
+                  className={cn(
+                    "w-3 h-3 text-muted-foreground transition-transform duration-200",
+                    showUserMenu && "rotate-180"
+                  )}
+                />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

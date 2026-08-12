@@ -126,24 +126,26 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
             )}
           </div>
 
-          {/* Kanan: Avatar */}
-          <button
-            onClick={() => setShowUserMenu((v) => !v)}
-            className="flex items-center gap-1.5 p-1.5 rounded-xl hover:bg-muted/60 transition-colors"
-            aria-label="Menu pengguna"
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">
-                {user?.name ? getInitials(user.name) : "?"}
-              </AvatarFallback>
-            </Avatar>
-            <ChevronDown
-              className={cn(
-                "w-3.5 h-3.5 text-muted-foreground transition-transform duration-200",
-                showUserMenu && "rotate-180"
-              )}
-            />
-          </button>
+          {/* Kanan: Avatar hanya di luar workspace */}
+          {!workspaceId && (
+            <button
+              onClick={() => setShowUserMenu((v) => !v)}
+              className="flex items-center gap-1.5 p-1.5 rounded-xl hover:bg-muted/60 transition-colors"
+              aria-label="Menu pengguna"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">
+                  {user?.name ? getInitials(user.name) : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <ChevronDown
+                className={cn(
+                  "w-3.5 h-3.5 text-muted-foreground transition-transform duration-200",
+                  showUserMenu && "rotate-180"
+                )}
+              />
+            </button>
+          )}
         </div>
       </header>
 

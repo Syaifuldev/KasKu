@@ -54,47 +54,49 @@
   --color-emerald-900: oklch(0.378 0.077 168.94);
 }
 
-/* Light Mode (Premium) */
+/* Light Mode — Clean, Elegant & Professional */
 :root {
-  --background: oklch(0.99 0 0); /* Vercel light background */
-  --foreground: oklch(0.14 0 0);
-  
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0 0);
-  
+  /* Base surfaces — warm white hierarchy */
+  --background: oklch(0.985 0.002 80);      /* Warm white, bukan putih buta */
+  --foreground: oklch(0.15 0.006 250);      /* Charcoal navy — lebih elegan dari hitam murni */
+
+  --card: oklch(1 0 0);                     /* Pure white cards kontras dengan background */
+  --card-foreground: oklch(0.15 0.006 250);
+
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.14 0 0);
-  
-  --primary: oklch(0.14 0 0); /* Black primary in light mode for formal look */
+  --popover-foreground: oklch(0.15 0.006 250);
+
+  /* Primary — Emerald profesional */
+  --primary: oklch(0.55 0.15 162);          /* Emerald-600 yang dalam, bukan mencolok */
   --primary-foreground: oklch(0.99 0 0);
-  
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  
-  --accent: oklch(0.96 0 0);
-  --accent-foreground: oklch(0.14 0 0);
-  
+
+  --secondary: oklch(0.965 0.004 80);       /* Warm gray subtle */
+  --secondary-foreground: oklch(0.25 0.006 250);
+
+  --muted: oklch(0.96 0.003 80);            /* Barely-there warm gray */
+  --muted-foreground: oklch(0.50 0.006 250); /* Medium slate — terbaca tapi tidak dominan */
+
+  --accent: oklch(0.96 0.008 162);          /* Emerald tint sangat muda */
+  --accent-foreground: oklch(0.45 0.12 162);
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
-  
-  --border: oklch(0.92 0 0); /* Subtle light border */
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.14 0 0);
-  
-  --radius: 0.6rem;
-  
-  /* Sidebar */
-  --sidebar: oklch(0.99 0 0);
-  --sidebar-foreground: oklch(0.14 0 0);
-  --sidebar-primary: oklch(0.14 0 0);
+
+  --border: oklch(0.91 0.004 250);          /* Cool subtle divider */
+  --input: oklch(0.94 0.003 250);
+  --ring: oklch(0.55 0.15 162);             /* Emerald focus ring */
+
+  --radius: 0.625rem;
+
+  /* Sidebar — sedikit lebih gelap dari background untuk kedalaman */
+  --sidebar: oklch(0.975 0.003 80);
+  --sidebar-foreground: oklch(0.15 0.006 250);
+  --sidebar-primary: oklch(0.55 0.15 162);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0 0);
-  --sidebar-accent-foreground: oklch(0.14 0 0);
-  --sidebar-border: oklch(0.92 0 0);
-  --sidebar-ring: oklch(0.14 0 0);
+  --sidebar-accent: oklch(0.955 0.008 162);
+  --sidebar-accent-foreground: oklch(0.40 0.10 162);
+  --sidebar-border: oklch(0.90 0.004 250);
+  --sidebar-ring: oklch(0.55 0.15 162);
 }
 
 /* Dark Mode (Linear/Vercel style - very dark, sleek) */

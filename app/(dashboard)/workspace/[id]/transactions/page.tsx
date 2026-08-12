@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWorkspaceById } from "@/lib/queries/workspace.queries";
 import { getTransactions } from "@/lib/queries/transaction.queries";
+import { getCategoriesByWorkspace } from "@/lib/queries/category.queries";
 import { getCurrentUser } from "@/lib/actions/auth.actions";
 import { TransactionsClient } from "./transactions-client";
 
@@ -32,9 +33,10 @@ export default async function TransactionsPage({ params, searchParams }: Props) 
   const { id } = await params;
   const sp = await searchParams;
 
-  const [workspace, user] = await Promise.all([
+  const [workspace, user, categories] = await Promise.all([
     getWorkspaceById(id),
     getCurrentUser(),
+    getCategoriesByWorkspace(id),
   ]);
 
   if (!workspace || !user) notFound();
@@ -59,6 +61,7 @@ export default async function TransactionsPage({ params, searchParams }: Props) 
       transactions={transactions}
       userId={user.id}
       initialFilters={filters}
+      categories={categories}
     />
   );
 }

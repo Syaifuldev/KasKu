@@ -25,6 +25,7 @@ export async function createTransaction(workspaceId: string, formData: FormData)
     type: formData.get("type") as string,
     amount: Number(formData.get("amount")),
     description: formData.get("description") as string,
+    category_id: (formData.get("category_id") as string | null) || null,
     receipt_url: formData.get("receipt_url") as string | null,
   };
 
@@ -51,6 +52,7 @@ export async function createTransaction(workspaceId: string, formData: FormData)
       type: parsed.data.type,
       amount: parsed.data.amount,
       description: parsed.data.description,
+      category_id: parsed.data.category_id || null,
       receipt_url: parsed.data.receipt_url || null,
     })
     .select()
@@ -84,6 +86,7 @@ export async function updateTransaction(
     type: formData.get("type") as string,
     amount: Number(formData.get("amount")),
     description: formData.get("description") as string,
+    category_id: (formData.get("category_id") as string | null) || null,
     receipt_url: formData.get("receipt_url") as string | null,
   };
 
@@ -99,6 +102,7 @@ export async function updateTransaction(
       type: parsed.data.type,
       amount: parsed.data.amount,
       description: parsed.data.description,
+      category_id: parsed.data.category_id || null,
       receipt_url: parsed.data.receipt_url || null,
     })
     .eq("id", id)

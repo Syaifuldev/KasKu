@@ -14,7 +14,7 @@ import { TransactionForm } from "@/components/transaction/transaction-form";
 import { MobileFab } from "@/components/layout/mobile-fab";
 import { formatRupiah } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import type { WorkspaceWithStats, Transaction, PaginatedResponse, TransactionFilters } from "@/types";
+import type { WorkspaceWithStats, Transaction, PaginatedResponse, TransactionFilters, Category } from "@/types";
 import type { SortingState } from "@tanstack/react-table";
 
 interface TransactionsClientProps {
@@ -22,6 +22,7 @@ interface TransactionsClientProps {
   transactions: PaginatedResponse<Transaction>;
   userId: string;
   initialFilters: TransactionFilters;
+  categories?: Category[];
 }
 
 export function TransactionsClient({
@@ -29,6 +30,7 @@ export function TransactionsClient({
   transactions,
   userId,
   initialFilters,
+  categories = [],
 }: TransactionsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -171,6 +173,7 @@ export function TransactionsClient({
           page={filters.page ?? 1}
           onPageChange={(p) => handleFiltersChange({ page: p })}
           onEdit={handleEdit}
+          categories={categories}
         />
       </div>
 
@@ -181,6 +184,7 @@ export function TransactionsClient({
         workspaceId={workspace.id}
         userId={userId}
         transaction={editingTransaction}
+        categories={categories}
       />
 
       {/* ── Mobile FAB ── */}

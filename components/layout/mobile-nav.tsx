@@ -63,8 +63,8 @@ export function MobileNav({ user, workspaceId, workspaceName }: MobileNavProps) 
           matchExact: false,
         },
         {
-          href: "/settings",
-          label: "Setelan",
+          href: `/workspace/${workspaceId}/settings`,
+          label: "Pengaturan",
           icon: Settings,
           matchExact: false,
         },

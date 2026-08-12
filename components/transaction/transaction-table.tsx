@@ -41,7 +41,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Transaction, PaginatedResponse } from "@/types";
+import type { Transaction, PaginatedResponse, Category } from "@/types";
 import type { SortingState } from "@tanstack/react-table";
 
 interface TransactionTableProps {
@@ -53,6 +53,7 @@ interface TransactionTableProps {
   page: number;
   onPageChange: (page: number) => void;
   onEdit: (transaction: Transaction) => void;
+  categories?: Category[];
 }
 
 export function TransactionTable({
@@ -62,6 +63,7 @@ export function TransactionTable({
   page,
   onPageChange,
   onEdit,
+  categories = [],
 }: TransactionTableProps) {
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -138,7 +140,7 @@ export function TransactionTable({
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{tx.description}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-xs text-muted-foreground">
                     {formatDateShort(tx.date)}
                   </span>
@@ -151,6 +153,26 @@ export function TransactionTable({
                   >
                     {tx.type === "income" ? "Masuk" : "Keluar"}
                   </Badge>
+                  {/* Badge Kategori */}
+                  {tx.category_id && (() => {
+                    const cat = categories.find((c) => c.id === tx.category_id);
+                    return cat ? (
+                      <span
+                        className="inline-flex items-center gap-1 px-1.5 h-4 rounded-full text-[10px] font-medium"
+                        style={{
+                          backgroundColor: cat.color + "22",
+                          color: cat.color,
+                          border: `1px solid ${cat.color}44`,
+                        }}
+                      >
+                        <span
+                          className="w-1 h-1 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                        {cat.name}
+                      </span>
+                    ) : null;
+                  })()}
                   {tx.receipt_url && (
                     <a
                       href={tx.receipt_url}

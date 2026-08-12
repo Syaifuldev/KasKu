@@ -36,7 +36,19 @@ export type Transaction = {
   type: TransactionType;
   amount: number;
   description: string;
+  category_id: string | null;
   receipt_url: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  category?: Category | null;
+};
+
+export type Category = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  color: string;
   created_at: string;
   updated_at: string;
 };
@@ -79,7 +91,13 @@ export type TransactionFormData = {
   type: TransactionType;
   amount: number;
   description: string;
+  category_id?: string | null;
   receipt_url?: string;
+};
+
+export type CategoryFormData = {
+  name: string;
+  color: string;
 };
 
 // ============================================

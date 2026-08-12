@@ -16,6 +16,7 @@ export const transactionSchema = z.object({
     .string()
     .min(1, "Keterangan wajib diisi")
     .max(500, "Keterangan maksimal 500 karakter"),
+  category_id: z.string().optional().nullable(),
   receipt_url: z.string().optional().nullable(),
 });
 

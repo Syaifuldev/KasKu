@@ -87,6 +87,12 @@ export function Sidebar({ user, workspaceId }: SidebarProps) {
           icon: FileText,
           matchExact: false,
         },
+        {
+          href: `/workspace/${workspaceId}/settings`,
+          label: "Pengaturan",
+          icon: Settings,
+          matchExact: false,
+        },
       ]
     : [];
 

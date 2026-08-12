@@ -8,7 +8,7 @@ import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Tag, ChevronDown } from "lucide-react";
 import { transactionSchema, type TransactionSchema } from "@/lib/validations/transaction.schema";
 import { createTransaction, updateTransaction } from "@/lib/actions/transaction.actions";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn, formatDateInput } from "@/lib/utils";
-import type { Transaction } from "@/types";
+import type { Transaction, Category } from "@/types";
 
 interface TransactionFormProps {
   open: boolean;
@@ -31,6 +31,7 @@ interface TransactionFormProps {
   workspaceId: string;
   userId: string;
   transaction?: Transaction | null;
+  categories?: Category[];
 }
 
 export function TransactionForm({
@@ -39,6 +40,7 @@ export function TransactionForm({
   workspaceId,
   userId,
   transaction,
+  categories = [],
 }: TransactionFormProps) {
   const [isPending, startTransition] = useTransition();
   const isEdit = !!transaction;
@@ -57,11 +59,13 @@ export function TransactionForm({
       type: "income",
       amount: undefined,
       description: "",
+      category_id: null,
       receipt_url: null,
     },
   });
 
   const selectedType = watch("type");
+  const selectedCategoryId = watch("category_id");
 
   // Populate form saat edit
   useEffect(() => {
@@ -71,6 +75,7 @@ export function TransactionForm({
         type: transaction.type,
         amount: Number(transaction.amount),
         description: transaction.description,
+        category_id: transaction.category_id,
         receipt_url: transaction.receipt_url,
       });
     } else {
@@ -79,6 +84,7 @@ export function TransactionForm({
         type: "income",
         amount: undefined,
         description: "",
+        category_id: null,
         receipt_url: null,
       });
     }
@@ -90,6 +96,7 @@ export function TransactionForm({
     formData.append("type", data.type);
     formData.append("amount", String(data.amount));
     formData.append("description", data.description);
+    if (data.category_id) formData.append("category_id", data.category_id);
 
     startTransition(async () => {
       const result = isEdit
@@ -105,6 +112,8 @@ export function TransactionForm({
       }
     });
   };
+
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,6 +213,77 @@ export function TransactionForm({
               <p className="text-xs text-destructive">{errors.description.message}</p>
             )}
           </div>
+
+          {/* Kategori */}
+          {categories.length > 0 && (
+            <div className="space-y-2">
+              <Label>Kategori (opsional)</Label>
+              <div className="flex flex-wrap gap-2">
+                {/* Pilihan "Tanpa Kategori" */}
+                <button
+                  type="button"
+                  onClick={() => setValue("category_id", null)}
+                  disabled={isPending}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                    !selectedCategoryId
+                      ? "border-border bg-muted text-foreground"
+                      : "border-border/50 bg-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                  )}
+                >
+                  <Tag className="w-3 h-3" />
+                  Semua
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() =>
+                      setValue(
+                        "category_id",
+                        selectedCategoryId === cat.id ? null : cat.id
+                      )
+                    }
+                    disabled={isPending}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
+                      selectedCategoryId === cat.id
+                        ? "ring-1 ring-offset-1"
+                        : "opacity-70 hover:opacity-100"
+                    )}
+                    style={
+                      selectedCategoryId === cat.id
+                        ? {
+                            backgroundColor: cat.color + "22",
+                            color: cat.color,
+                            borderColor: cat.color + "66",
+                            ringColor: cat.color,
+                          }
+                        : {
+                            backgroundColor: cat.color + "11",
+                            color: cat.color,
+                            borderColor: cat.color + "33",
+                          }
+                    }
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+              {selectedCategory && (
+                <p className="text-xs text-muted-foreground">
+                  Dipilih:{" "}
+                  <span style={{ color: selectedCategory.color }} className="font-medium">
+                    {selectedCategory.name}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">

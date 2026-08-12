@@ -248,7 +248,7 @@ export function TransactionForm({
                     className={cn(
                       "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
                       selectedCategoryId === cat.id
-                        ? "ring-1 ring-offset-1"
+                        ? ""
                         : "opacity-70 hover:opacity-100"
                     )}
                     style={
@@ -257,7 +257,8 @@ export function TransactionForm({
                             backgroundColor: cat.color + "22",
                             color: cat.color,
                             borderColor: cat.color + "66",
-                            ringColor: cat.color,
+                            outline: `2px solid ${cat.color}55`,
+                            outlineOffset: "2px",
                           }
                         : {
                             backgroundColor: cat.color + "11",

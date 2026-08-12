@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWorkspaceById } from "@/lib/queries/workspace.queries";
-import { getTransactionsForReport } from "@/lib/queries/transaction.queries";
+import { getTransactionsForReport, getAllTransactionsForReport } from "@/lib/queries/transaction.queries";
 import { ReportClient } from "./report-client";
 import { getDateRangeFromPeriod, formatDateInput } from "@/lib/utils";
 
@@ -31,20 +31,25 @@ export default async function ReportPage({ params, searchParams }: Props) {
   const workspace = await getWorkspaceById(id);
   if (!workspace) notFound();
 
-  const period = sp.period ?? "month";
+  const period = sp.period ?? "all";
   let dateFrom: string;
   let dateTo: string;
 
-  if (period === "custom" && sp.from && sp.to) {
+  let transactions;
+  if (period === "all") {
+    transactions = await getAllTransactionsForReport(id);
+    dateFrom = "";
+    dateTo = formatDateInput(new Date());
+  } else if (period === "custom" && sp.from && sp.to) {
     dateFrom = sp.from;
     dateTo = sp.to;
+    transactions = await getTransactionsForReport(id, dateFrom, dateTo);
   } else {
     const range = getDateRangeFromPeriod(period);
     dateFrom = formatDateInput(range.from);
     dateTo = formatDateInput(range.to);
+    transactions = await getTransactionsForReport(id, dateFrom, dateTo);
   }
-
-  const transactions = await getTransactionsForReport(id, dateFrom, dateTo);
 
   return (
     <ReportClient

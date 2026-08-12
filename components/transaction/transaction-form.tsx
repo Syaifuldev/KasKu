@@ -4,14 +4,13 @@
  */
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
 import { transactionSchema, type TransactionSchema } from "@/lib/validations/transaction.schema";
 import { createTransaction, updateTransaction } from "@/lib/actions/transaction.actions";
-import { ReceiptUpload } from "./receipt-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +41,6 @@ export function TransactionForm({
   transaction,
 }: TransactionFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const isEdit = !!transaction;
 
   const {
@@ -75,7 +73,6 @@ export function TransactionForm({
         description: transaction.description,
         receipt_url: transaction.receipt_url,
       });
-      setReceiptUrl(transaction.receipt_url);
     } else {
       reset({
         date: formatDateInput(new Date()),
@@ -84,7 +81,6 @@ export function TransactionForm({
         description: "",
         receipt_url: null,
       });
-      setReceiptUrl(null);
     }
   }, [transaction, reset, open]);
 
@@ -94,7 +90,6 @@ export function TransactionForm({
     formData.append("type", data.type);
     formData.append("amount", String(data.amount));
     formData.append("description", data.description);
-    if (receiptUrl) formData.append("receipt_url", receiptUrl);
 
     startTransition(async () => {
       const result = isEdit
@@ -208,21 +203,6 @@ export function TransactionForm({
             {errors.description && (
               <p className="text-xs text-destructive">{errors.description.message}</p>
             )}
-          </div>
-
-          {/* Upload Bukti */}
-          <div className="space-y-2">
-            <Label>Bukti Transaksi (opsional)</Label>
-            <ReceiptUpload
-              userId={userId}
-              workspaceId={workspaceId}
-              value={receiptUrl}
-              onChange={(url) => {
-                setReceiptUrl(url);
-                setValue("receipt_url", url);
-              }}
-              disabled={isPending}
-            />
           </div>
 
           {/* Actions */}

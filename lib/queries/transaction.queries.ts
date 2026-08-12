@@ -103,3 +103,21 @@ export async function getTransactionsForReport(
 
   return data ?? [];
 }
+
+/**
+ * Ambil semua transaksi untuk laporan (tanpa filter tanggal)
+ */
+export async function getAllTransactionsForReport(
+  workspaceId: string
+): Promise<Transaction[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  return data ?? [];
+}

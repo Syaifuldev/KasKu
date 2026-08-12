@@ -35,6 +35,7 @@ interface ReportClientProps {
 }
 
 const PERIOD_OPTIONS = [
+  { value: "all", label: "Semua" },
   { value: "today", label: "Hari Ini" },
   { value: "week", label: "Minggu Ini" },
   { value: "month", label: "Bulan Ini" },
@@ -356,7 +357,9 @@ export function ReportClient({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Laporan</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {formatDate(initialFrom)} — {formatDate(initialTo)}
+            {selectedPeriod === "all"
+              ? "Semua transaksi"
+              : `${formatDate(initialFrom)} — ${formatDate(initialTo)}`}
           </p>
         </div>
         <div className="flex gap-2">

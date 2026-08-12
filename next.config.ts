@@ -8,16 +8,13 @@ const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
   register: true,
-  skipWaiting: true,
   fallbacks: {
     document: "/offline.html",
   },
   workboxOptions: {
+    skipWaiting: true,
     disableDevLogs: true,
   },
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
 });
 
 const nextConfig: NextConfig = {

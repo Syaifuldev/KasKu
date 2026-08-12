@@ -1,7 +1,7 @@
 /**
  * Root Layout — KasKu App
  */
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -33,20 +33,32 @@ export const metadata: Metadata = {
   authors: [{ name: "KasKu" }],
   creator: "KasKu",
   metadataBase: new URL(appUrl),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "KasKu",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icon.png", type: "image/png" },
+      { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
     ],
+    shortcut: "/icons/icon-192x192.png",
   },
   openGraph: {
     title: "KasKu — Aplikasi Pencatatan Kas",
     description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
     url: appUrl,
     siteName: "KasKu",
-    images: [{ url: "/icon.png" }],
+    images: [{ url: "/icons/icon-512x512.png", width: 512, height: 512 }],
     locale: "id_ID",
     type: "website",
   },
@@ -54,12 +66,25 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "KasKu — Aplikasi Pencatatan Kas",
     description: "Aplikasi pencatatan kas sederhana, cepat, dan modern.",
-    images: ["/icon.png"],
+    images: ["/icons/icon-512x512.png"],
   },
   robots: {
     index: true,
     follow: true,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f8f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

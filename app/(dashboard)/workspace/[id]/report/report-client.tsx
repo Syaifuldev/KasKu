@@ -149,18 +149,63 @@ export function ReportClient({
       const mutedColor: [number, number, number] = [115, 115, 115];
       const incomeColor: [number, number, number] = [22, 163, 74];
       const expenseColor: [number, number, number] = [220, 38, 38]; // red-600
-      
+
       // -- HEADER --
-      // Logo text
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(...primaryColor);
-      doc.text("KasKu", 14, 22);
-      
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(...mutedColor);
-      doc.text("Catat Kas, Kelola Lebih Baik", 14, 28);
+      // Coba load logo workspace
+      let logoLoaded = false;
+      const LOGO_SIZE = 28; // px di PDF
+      const LOGO_X = 14;
+      const LOGO_Y = 10;
+
+      if (workspace.logo_url) {
+        try {
+          const imgRes = await fetch(workspace.logo_url);
+          if (imgRes.ok) {
+            const imgBlob = await imgRes.blob();
+            const imgBase64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(imgBlob);
+            });
+            // Deteksi format
+            const mimeType = imgBlob.type.toUpperCase().includes("PNG")
+              ? "PNG"
+              : imgBlob.type.toUpperCase().includes("WEBP")
+              ? "WEBP"
+              : "JPEG";
+            doc.addImage(imgBase64, mimeType, LOGO_X, LOGO_Y, LOGO_SIZE, LOGO_SIZE);
+            logoLoaded = true;
+          }
+        } catch {
+          // Gagal load logo, fallback ke teks
+        }
+      }
+
+      // Teks "KasKu" — geser ke kanan jika ada logo
+      const textStartX = logoLoaded ? LOGO_X + LOGO_SIZE + 4 : LOGO_X;
+      const textBaseY = logoLoaded ? LOGO_Y + 8 : 22;
+
+      if (!logoLoaded) {
+        // Logo teks KasKu (branding default)
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(...primaryColor);
+        doc.text("KasKu", textStartX, textBaseY);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(...mutedColor);
+        doc.text("Catat Kas, Kelola Lebih Baik", textStartX, textBaseY + 6);
+      } else {
+        // Nama app kecil di samping logo
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(...primaryColor);
+        doc.text("KasKu", textStartX, textBaseY);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(...mutedColor);
+        doc.text("Catat Kas, Kelola Lebih Baik", textStartX, textBaseY + 5);
+      }
       
       // Workspace & Period (Right aligned)
       doc.setFont("helvetica", "bold");
@@ -173,13 +218,15 @@ export function ReportClient({
       doc.setTextColor(...mutedColor);
       doc.text(`Periode: ${formatDateShort(initialFrom)} - ${formatDateShort(initialTo)}`, pageWidth - 14, 28, { align: "right" });
       
-      // Separator line
+      // Separator line — posisi Y menyesuaikan apakah ada logo
+      const separatorY = logoLoaded ? Math.max(LOGO_Y + LOGO_SIZE + 4, 34) : 34;
       doc.setDrawColor(229, 231, 235); // gray-200
       doc.setLineWidth(0.5);
-      doc.line(14, 34, pageWidth - 14, 34);
+      doc.line(14, separatorY, pageWidth - 14, separatorY);
+
 
       // -- SUMMARY CARDS --
-      const cardY = 40;
+      const cardY = separatorY + 6;
       const cardWidth = (pageWidth - 28 - 10) / 3; // 3 cards, 5px gap between
       const cardHeight = 22;
       

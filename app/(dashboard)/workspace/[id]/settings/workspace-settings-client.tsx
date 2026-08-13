@@ -1,10 +1,10 @@
 /**
- * Workspace Settings Client — Manajemen Kategori
+ * Workspace Settings Client — Manajemen Kategori + Logo Workspace
  * CRUD kategori per workspace dengan UI yang premium
  */
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -17,9 +17,13 @@ import {
   X,
   Loader2,
   Settings2,
+  ImageIcon,
+  Upload,
 } from "lucide-react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { createCategory, updateCategory, deleteCategory } from "@/lib/actions/category.actions";
+import { uploadWorkspaceLogo, deleteWorkspaceLogo } from "@/lib/actions/workspace.actions";
 import { categorySchema, type CategorySchema } from "@/lib/validations/category.schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +71,14 @@ export function WorkspaceSettingsClient({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
+  // ── Logo State ──
+  const [logoUrl, setLogoUrl] = useState<string | null>(workspace.logo_url ?? null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isDeletingLogo, setIsDeletingLogo] = useState(false);
+  const [showDeleteLogoDialog, setShowDeleteLogoDialog] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // ── Add Form ──
   const addForm = useForm<CategorySchema>({
     resolver: zodResolver(categorySchema),
@@ -81,6 +93,65 @@ export function WorkspaceSettingsClient({
   });
   const editColor = editForm.watch("color");
 
+  // ── Logo Handlers ──
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side validation
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran file maksimal 2MB");
+      return;
+    }
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Format file harus PNG, JPG, WEBP, atau GIF");
+      return;
+    }
+
+    // Optimistic preview
+    const reader = new FileReader();
+    reader.onloadend = () => setLogoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const result = await uploadWorkspaceLogo(workspace.id, formData);
+      if (result?.error) {
+        toast.error(result.error);
+        setLogoPreview(null);
+      } else {
+        setLogoUrl(result.data?.logo_url ?? null);
+        setLogoPreview(null);
+        toast.success("Logo berhasil diupload");
+      }
+    } finally {
+      setIsUploadingLogo(false);
+      // Reset file input agar bisa upload file yang sama
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteLogo = async () => {
+    setIsDeletingLogo(true);
+    try {
+      const result = await deleteWorkspaceLogo(workspace.id);
+      if (result?.error) {
+        toast.error(result.error);
+      } else {
+        setLogoUrl(null);
+        setLogoPreview(null);
+        toast.success("Logo berhasil dihapus");
+      }
+    } finally {
+      setIsDeletingLogo(false);
+      setShowDeleteLogoDialog(false);
+    }
+  };
+
+  // ── Category Handlers ──
   const handleAdd = (data: CategorySchema) => {
     const formData = new FormData();
     formData.append("name", data.name);
@@ -148,6 +219,8 @@ export function WorkspaceSettingsClient({
     });
   };
 
+  const displayLogoUrl = logoPreview ?? logoUrl;
+
   return (
     <div className="p-4 lg:p-8 max-w-2xl mx-auto">
       {/* Header */}
@@ -161,7 +234,104 @@ export function WorkspaceSettingsClient({
         </div>
       </div>
 
-      {/* Category Section */}
+      {/* ── Logo Section ── */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden mb-5">
+        {/* Section header */}
+        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border/60">
+          <ImageIcon className="w-4 h-4 text-primary" />
+          <div>
+            <p className="text-sm font-semibold">Logo Workspace</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Tampil di header PDF laporan. Max 2MB (PNG, JPG, WEBP, GIF)
+            </p>
+          </div>
+        </div>
+
+        <div className="px-5 py-5 flex items-center gap-5 flex-wrap">
+          {/* Preview */}
+          <div className="relative">
+            {displayLogoUrl ? (
+              <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-border bg-muted/30">
+                <Image
+                  src={displayLogoUrl}
+                  alt="Logo workspace"
+                  fill
+                  className="object-contain p-1.5"
+                  unoptimized
+                />
+                {isUploadingLogo && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center gap-1.5">
+                {isUploadingLogo ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                ) : (
+                  <>
+                    <ImageIcon className="w-6 h-6 text-muted-foreground/50" />
+                    <span className="text-[10px] text-muted-foreground/60 text-center leading-tight px-1">
+                      Belum ada logo
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              id="logo-upload-input"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={isUploadingLogo}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 rounded-xl gap-1.5 text-sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingLogo || isDeletingLogo}
+              id="btn-upload-logo"
+            >
+              {isUploadingLogo ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Upload className="w-3.5 h-3.5" />
+              )}
+              {displayLogoUrl ? "Ganti Logo" : "Upload Logo"}
+            </Button>
+
+            {logoUrl && !isUploadingLogo && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 rounded-xl gap-1.5 text-sm text-destructive hover:text-destructive hover:bg-destructive/8"
+                onClick={() => setShowDeleteLogoDialog(true)}
+                disabled={isDeletingLogo}
+                id="btn-delete-logo"
+              >
+                {isDeletingLogo ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                Hapus Logo
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Category Section ── */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         {/* Section header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
@@ -440,7 +610,7 @@ export function WorkspaceSettingsClient({
         )}
       </div>
 
-      {/* Delete Dialog */}
+      {/* Delete Category Dialog */}
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
@@ -462,6 +632,32 @@ export function WorkspaceSettingsClient({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
             >
               {isPending ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Logo Dialog */}
+      <AlertDialog
+        open={showDeleteLogoDialog}
+        onOpenChange={(open) => !open && setShowDeleteLogoDialog(false)}
+      >
+        <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Logo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Logo workspace <strong>{workspace.name}</strong> akan dihapus
+              permanen. Logo tidak akan muncul lagi di export PDF.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteLogo}
+              disabled={isDeletingLogo}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+            >
+              {isDeletingLogo ? "Menghapus..." : "Hapus Logo"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

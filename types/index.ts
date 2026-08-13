@@ -22,6 +22,7 @@ export type Workspace = {
   description: string | null;
   icon: string;
   color: string;
+  logo_url: string | null;
   is_archived: boolean;
   created_at: string;
   updated_at: string;

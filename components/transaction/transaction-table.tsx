@@ -1,6 +1,6 @@
 /**
- * Transaction List — Mobile-friendly card list
- * Menggantikan tabel dengan list item yang mudah di-tap di HP
+ * Transaction Table — Buku Kas Style
+ * Tabel dengan kolom: No, Tanggal, Keterangan, Pemasukan, Pengeluaran, Saldo
  */
 "use client";
 
@@ -15,13 +15,11 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
-  TrendingDown,
   MoreVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/lib/actions/transaction.actions";
 import { cn, formatRupiah, formatDateShort } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -54,6 +52,8 @@ interface TransactionTableProps {
   onPageChange: (page: number) => void;
   onEdit: (transaction: Transaction) => void;
   categories?: Category[];
+  /** Saldo awal sebelum halaman ini (untuk running balance lintas halaman) */
+  initialBalance?: number;
 }
 
 export function TransactionTable({
@@ -64,6 +64,7 @@ export function TransactionTable({
   onPageChange,
   onEdit,
   categories = [],
+  initialBalance = 0,
 }: TransactionTableProps) {
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -81,12 +82,37 @@ export function TransactionTable({
     });
   };
 
+  // Hitung running balance kumulatif untuk data di halaman ini
+  const transactionsWithBalance = data.data.reduce(
+    (acc, t) => {
+      const prev = acc.length > 0 ? acc[acc.length - 1].running_balance : initialBalance;
+      const delta = t.type === "income" ? Number(t.amount) : -Number(t.amount);
+      return [...acc, { ...t, running_balance: prev + delta }];
+    },
+    [] as (Transaction & { running_balance: number })[]
+  );
+
+  // Offset nomor urut berdasar halaman
+  const rowOffset = (page - 1) * data.pageSize;
+
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} className="h-[72px] rounded-2xl" />
-        ))}
+      <div className="rounded-2xl overflow-hidden border border-border/50">
+        {/* Fake header */}
+        <div className="grid grid-cols-6 bg-emerald-600 px-4 py-3 gap-2">
+          {["No", "Tanggal", "Keterangan", "Pemasukan", "Pengeluaran", "Saldo"].map((h) => (
+            <Skeleton key={h} className="h-4 bg-emerald-500/40 rounded" />
+          ))}
+        </div>
+        <div className="divide-y divide-border/40 bg-card">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="grid grid-cols-6 px-4 py-4 gap-2 items-center">
+              {[...Array(6)].map((__, j) => (
+                <Skeleton key={j} className="h-4 rounded" />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -111,131 +137,151 @@ export function TransactionTable({
 
   return (
     <>
-      {/* Transaction List */}
-      <div className="bg-card border border-border/50 rounded-2xl overflow-hidden divide-y divide-border/40">
-        <AnimatePresence initial={false}>
-          {data.data.map((tx, i) => (
-            <motion.div
-              key={tx.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
-              transition={{ delay: i * 0.025, duration: 0.2 }}
-              className="flex items-center gap-3 px-4 py-3.5 active:bg-muted/40 transition-colors"
-            >
-              {/* Type Icon */}
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                  tx.type === "income" ? "bg-emerald-500/12" : "bg-red-500/12"
-                )}
-              >
-                {tx.type === "income" ? (
-                  <TrendingUp className="w-4.5 h-4.5 text-emerald-500" />
-                ) : (
-                  <TrendingDown className="w-4.5 h-4.5 text-red-400" />
-                )}
-              </div>
+      {/* ── Buku Kas Table ── */}
+      <div className="rounded-2xl overflow-hidden border border-border/50 overflow-x-auto">
+        <table className="w-full min-w-[640px] border-collapse">
+          {/* Header Hijau */}
+          <thead>
+            <tr className="bg-emerald-600">
+              <th className="px-3 py-3.5 text-center text-sm font-semibold text-white w-12">No</th>
+              <th className="px-4 py-3.5 text-left text-sm font-semibold text-white w-32">Tanggal</th>
+              <th className="px-4 py-3.5 text-left text-sm font-semibold text-white">Keterangan</th>
+              <th className="px-4 py-3.5 text-right text-sm font-semibold text-white w-36">Pemasukan</th>
+              <th className="px-4 py-3.5 text-right text-sm font-semibold text-white w-36">Pengeluaran</th>
+              <th className="px-4 py-3.5 text-right text-sm font-semibold text-white w-36">Saldo</th>
+              <th className="px-2 py-3.5 w-10 bg-emerald-600" />
+            </tr>
+          </thead>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{tx.description}</p>
-                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-muted-foreground">
-                    {formatDateShort(tx.date)}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "h-4 px-1.5 text-[10px] font-medium",
-                      tx.type === "income" ? "badge-income" : "badge-expense"
-                    )}
+          {/* Body */}
+          <tbody className="bg-card divide-y divide-border/40">
+            <AnimatePresence initial={false}>
+              {transactionsWithBalance.map((tx, i) => {
+                const cat = categories.find((c) => c.id === tx.category_id);
+                return (
+                  <motion.tr
+                    key={tx.id}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 6 }}
+                    transition={{ delay: i * 0.02, duration: 0.18 }}
+                    className="hover:bg-muted/30 transition-colors"
                   >
-                    {tx.type === "income" ? "Masuk" : "Keluar"}
-                  </Badge>
-                  {/* Badge Kategori */}
-                  {tx.category_id && (() => {
-                    const cat = categories.find((c) => c.id === tx.category_id);
-                    return cat ? (
-                      <span
-                        className="inline-flex items-center gap-1 px-1.5 h-4 rounded-full text-[10px] font-medium"
-                        style={{
-                          backgroundColor: cat.color + "22",
-                          color: cat.color,
-                          border: `1px solid ${cat.color}44`,
-                        }}
-                      >
-                        <span
-                          className="w-1 h-1 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: cat.color }}
-                        />
-                        {cat.name}
-                      </span>
-                    ) : null;
-                  })()}
-                  {tx.receipt_url && (
-                    <a
-                      href={tx.receipt_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {tx.receipt_url.toLowerCase().includes(".pdf") ? (
-                        <FileText className="w-3 h-3" />
-                      ) : (
-                        <ImageIcon className="w-3 h-3" />
+                    {/* No */}
+                    <td className="px-3 py-4 text-center text-sm text-muted-foreground">
+                      {rowOffset + i + 1}
+                    </td>
+
+                    {/* Tanggal */}
+                    <td className="px-4 py-4 text-sm text-foreground whitespace-nowrap">
+                      {formatDateShort(tx.date)}
+                    </td>
+
+                    {/* Keterangan */}
+                    <td className="px-4 py-4 text-sm text-foreground">
+                      <p className="leading-snug">{tx.description}</p>
+                      {/* Sub-info: kategori & bukti */}
+                      {(cat || tx.receipt_url) && (
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {cat && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium"
+                              style={{
+                                backgroundColor: cat.color + "22",
+                                color: cat.color,
+                                border: `1px solid ${cat.color}44`,
+                              }}
+                            >
+                              <span
+                                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: cat.color }}
+                              />
+                              {cat.name}
+                            </span>
+                          )}
+                          {tx.receipt_url && (
+                            <a
+                              href={tx.receipt_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {tx.receipt_url.toLowerCase().includes(".pdf") ? (
+                                <FileText className="w-3 h-3" />
+                              ) : (
+                                <ImageIcon className="w-3 h-3" />
+                              )}
+                              Bukti
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                        </div>
                       )}
-                      Bukti
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
+                    </td>
 
-              {/* Amount */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <span
-                  className={cn(
-                    "text-sm font-semibold",
-                    tx.type === "income" ? "text-emerald-500" : "text-red-400"
-                  )}
-                >
-                  {tx.type === "income" ? "+" : "-"}
-                  {formatRupiah(Number(tx.amount))}
-                </span>
+                    {/* Pemasukan */}
+                    <td className="px-4 py-4 text-right text-sm">
+                      {tx.type === "income" ? (
+                        <span className="font-medium text-emerald-500">
+                          {formatRupiah(Number(tx.amount))}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50">-</span>
+                      )}
+                    </td>
 
-                {/* Action menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <button
-                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/60 transition-colors"
-                        aria-label="Opsi transaksi"
-                      />
-                    }
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    <DropdownMenuItem onClick={() => onEdit(tx)}>
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Edit Transaksi
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => setDeleteTarget(tx)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Hapus
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                    {/* Pengeluaran */}
+                    <td className="px-4 py-4 text-right text-sm">
+                      {tx.type === "expense" ? (
+                        <span className="font-medium text-red-500">
+                          {formatRupiah(Number(tx.amount))}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50">-</span>
+                      )}
+                    </td>
+
+                    {/* Saldo */}
+                    <td className="px-4 py-4 text-right text-sm font-bold text-foreground">
+                      {formatRupiah(tx.running_balance)}
+                    </td>
+
+                    {/* Action menu */}
+                    <td className="px-2 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <button
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/60 transition-colors"
+                              aria-label="Opsi transaksi"
+                            />
+                          }
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuItem onClick={() => onEdit(tx)}>
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit Transaksi
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => setDeleteTarget(tx)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </AnimatePresence>
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}

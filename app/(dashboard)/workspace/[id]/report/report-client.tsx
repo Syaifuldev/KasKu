@@ -255,7 +255,7 @@ export function ReportClient({
 
       // -- TABLE --
       const tableY = cardY + cardHeight + 8;
-      
+
       autoTable(doc, {
         startY: tableY,
         head: [["No", "Tanggal", "Keterangan", "Pemasukan", "Pengeluaran", "Saldo"]],
@@ -271,16 +271,16 @@ export function ReportClient({
           ["", "", "TOTAL", formatRupiah(totalIncome), formatRupiah(totalExpense), formatRupiah(finalBalance)],
         ],
         theme: "grid",
-        styles: { 
+        styles: {
           font: "helvetica",
           fontSize: 9,
           cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
           textColor: [60, 60, 60],
-          lineColor: [240, 240, 240], // very light border
+          lineColor: [240, 240, 240],
           lineWidth: 0.1,
           valign: "middle",
         },
-        headStyles: { 
+        headStyles: {
           fillColor: primaryColor,
           textColor: [255, 255, 255],
           fontStyle: "bold",
@@ -297,21 +297,20 @@ export function ReportClient({
           4: { halign: "right", cellWidth: 32, textColor: expenseColor },
           5: { halign: "right", cellWidth: 32, fontStyle: "bold", textColor: textColor },
         },
-        didParseCell: function(data) {
-          // Style TOTAL row
+        didParseCell: function (data) {
+          // Style baris TOTAL
           if (data.row.index === data.table.body.length - 1 && data.section === "body") {
-             data.cell.styles.fontStyle = "bold";
-             data.cell.styles.fillColor = [240, 253, 244]; // emerald-50
-             data.cell.styles.textColor = textColor;
-             if (data.column.index === 3) data.cell.styles.textColor = incomeColor;
-             if (data.column.index === 4) data.cell.styles.textColor = expenseColor;
-             if (data.column.index === 5) data.cell.styles.textColor = finalBalance >= 0 ? incomeColor : expenseColor;
-             
-             // Remove border for empty cells in total row
-             if (data.column.index < 2) {
-                 data.cell.styles.fillColor = [255, 255, 255];
-                 data.cell.styles.lineWidth = 0;
-             }
+            data.cell.styles.fontStyle = "bold";
+            data.cell.styles.fillColor = [240, 253, 244]; // emerald-50
+            data.cell.styles.textColor = textColor;
+            if (data.column.index === 3) data.cell.styles.textColor = incomeColor;
+            if (data.column.index === 4) data.cell.styles.textColor = expenseColor;
+            if (data.column.index === 5) data.cell.styles.textColor = finalBalance >= 0 ? incomeColor : expenseColor;
+
+            if (data.column.index < 2) {
+              data.cell.styles.fillColor = [255, 255, 255];
+              data.cell.styles.lineWidth = 0;
+            }
           }
         },
         margin: { left: 14, right: 14, top: 20, bottom: 40 },
@@ -321,16 +320,15 @@ export function ReportClient({
           doc.setDrawColor(229, 231, 235);
           doc.setLineWidth(0.5);
           doc.line(14, footerY - 5, pageWidth - 14, footerY - 5);
-          
+
           doc.setFontSize(8);
-          doc.setTextColor(156, 163, 175); // gray-400
+          doc.setTextColor(156, 163, 175);
           doc.setFont("helvetica", "normal");
           doc.text(`Dicetak pada: ${formatDate(new Date().toISOString())} | Dokumen dihasilkan oleh KasKu`, 14, footerY + 2);
-          
-          // Page number
+
           const pageStr = `Halaman ${(doc.internal as any).getNumberOfPages()}`;
           doc.text(pageStr, pageWidth - 14, footerY + 2, { align: "right" });
-        }
+        },
       });
       
       doc.save(`Laporan_${workspace.name.replace(/\s+/g, "_")}_${initialFrom}_${initialTo}.pdf`);
